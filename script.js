@@ -186,8 +186,14 @@ const introSteps = [
       "Before acting on your score, make sure a doctor has checked for organic disease or another medical explanation.",
       "If your score suggests it may help, the results screen will include a link to a free online book for further exploration."
     ],
-    secondaryAction: "Back",
-    primaryAction: "Start the test"
+    gateQuestion: "Have you seen a licensed medical doctor about your condition?",
+    secondaryAction: "Back"
+  },
+  {
+    label: "Before You Begin",
+    gateQuestion: "Is your chronic pain or condition life-threatening?",
+    gateYesAborts: true,
+    secondaryAction: "Back"
   }
 ];
 
@@ -291,21 +297,46 @@ function buildCheckboxGrid(question) {
 function buildIntroMarkup() {
   const introStep = introSteps[state.introIndex];
   const introParagraphs = introStep.paragraphs
-    .map(
-      (paragraph, index) =>
-        `<p class="question-copy"${index === 0 ? ' data-focus-target tabindex="-1"' : ""}>${paragraph}</p>`
-    )
-    .join("");
+    ? introStep.paragraphs
+        .map(
+          (paragraph, index) =>
+            `<p class="question-copy"${index === 0 && !introStep.gateQuestion ? ' data-focus-target tabindex="-1"' : ""}>${paragraph}</p>`
+        )
+        .join("")
+    : "";
+  const copyStack = introParagraphs
+    ? `<div class="intro-copy-stack">${introParagraphs}</div>`
+    : "";
   const secondaryAction = introStep.secondaryAction
     ? `<button class="ghost-button" type="button" id="introSecondaryButton">${introStep.secondaryAction}</button>`
     : "";
 
+  if (introStep.gateQuestion) {
+    const yesButton = introStep.gateYesAborts
+      ? `<button class="ghost-button" type="button" id="gateYesButton">Yes</button>`
+      : `<button class="continue-button" type="button" id="gateYesButton">Yes</button>`;
+    const noButton = introStep.gateYesAborts
+      ? `<button class="continue-button" type="button" id="gateNoButton">No</button>`
+      : `<button class="ghost-button" type="button" id="gateNoButton">No</button>`;
+
+    return `
+      <article class="stage-card intro-card">
+        <p class="question-tag">${introStep.label}</p>
+        ${copyStack}
+        <h2 class="question-title" data-focus-target tabindex="-1">${introStep.gateQuestion}</h2>
+        <div class="intro-actions">
+          ${secondaryAction}
+          ${yesButton}
+          ${noButton}
+        </div>
+      </article>
+    `;
+  }
+
   return `
     <article class="stage-card intro-card">
       <p class="question-tag">${introStep.label}</p>
-      <div class="intro-copy-stack">
-        ${introParagraphs}
-      </div>
+      ${copyStack}
       <div class="intro-actions">
         ${secondaryAction}
         <button class="continue-button" type="button" id="introPrimaryButton">${introStep.primaryAction}</button>
@@ -454,17 +485,89 @@ function renderQuestion(animate = true) {
   );
 }
 
+function renderBlocked() {
+  renderStage(
+    `
+      <article class="stage-card intro-card">
+        <p class="question-tag">Before You Begin</p>
+        <div class="intro-copy-stack">
+          <p class="question-copy" data-focus-target tabindex="-1">This test is designed for people who have already seen a licensed medical doctor about their condition.</p>
+          <p class="question-copy">Please get a medical evaluation first. Once a doctor has assessed your condition, come back and take the test.</p>
+        </div>
+        <div class="intro-actions">
+          <button class="ghost-button" type="button" id="blockedBackButton">Back</button>
+        </div>
+      </article>
+    `,
+    () => {
+      document.getElementById("blockedBackButton").addEventListener("click", () => {
+        if (state.isTransitioning) return;
+        lockUi();
+        renderIntro();
+      });
+    }
+  );
+}
+
+function renderAborted() {
+  renderStage(
+    `
+      <article class="stage-card intro-card">
+        <p class="question-tag">Not Recommended</p>
+        <div class="intro-copy-stack">
+          <p class="question-copy" data-focus-target tabindex="-1">This test is only recommended for non-life-threatening conditions.</p>
+          <p class="question-copy">If your condition may be life-threatening, please seek immediate medical attention. Do not rely on self-assessment tools for serious medical concerns.</p>
+        </div>
+        <div class="intro-actions">
+          <button class="ghost-button" type="button" id="abortedBackButton">Back</button>
+        </div>
+      </article>
+    `,
+    () => {
+      document.getElementById("abortedBackButton").addEventListener("click", () => {
+        if (state.isTransitioning) return;
+        lockUi();
+        renderIntro();
+      });
+    }
+  );
+}
+
 function renderIntro(animate = true) {
   renderStage(
     buildIntroMarkup(),
     () => {
-      const introPrimaryButton = document.getElementById("introPrimaryButton");
+      const introStep = introSteps[state.introIndex];
       const introSecondaryButton = document.getElementById("introSecondaryButton");
 
-      introPrimaryButton.addEventListener(
-        "click",
-        state.introIndex === introSteps.length - 1 ? startQuiz : goToNextIntroStep
-      );
+      if (introStep.gateQuestion) {
+        document.getElementById("gateYesButton").addEventListener("click", () => {
+          if (state.isTransitioning) return;
+          lockUi();
+          if (introStep.gateYesAborts) {
+            renderAborted();
+          } else {
+            state.introIndex += 1;
+            renderIntro();
+          }
+        });
+
+        document.getElementById("gateNoButton").addEventListener("click", () => {
+          if (state.isTransitioning) return;
+          lockUi();
+          if (introStep.gateYesAborts) {
+            startQuiz();
+          } else {
+            renderBlocked();
+          }
+        });
+      } else {
+        const introPrimaryButton = document.getElementById("introPrimaryButton");
+        introPrimaryButton.addEventListener(
+          "click",
+          state.introIndex === introSteps.length - 1 ? startQuiz : goToNextIntroStep
+        );
+      }
 
       if (introSecondaryButton) {
         introSecondaryButton.addEventListener("click", goToPreviousIntroStep);
