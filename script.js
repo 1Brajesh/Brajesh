@@ -173,7 +173,7 @@ const introSteps = [
   {
     label: "Welcome",
     paragraphs: [
-      "This is an anonymous 10-question self-check.",
+      "Welcome to this page. I may be able to help you heal yourself from chronic pain without drugs, surgery or physical therapy. You can find out by taking this anonymous 10-question self-check.",
       "This paintest is designed to help you explore whether a pain pattern may be neuroplastic.",
       "Your answers stay in your browser. No identifying information is captured. No email is required."
     ],
@@ -512,7 +512,7 @@ function renderBlocked() {
   renderStage(
     `
       <article class="stage-card intro-card">
-        <p class="question-tag">Before You Begin</p>
+        <p class="question-tag">Sorry...</p>
         <div class="intro-copy-stack">
           <p class="question-copy" data-focus-target tabindex="-1">This test is designed for people who have already seen a licensed medical doctor about their condition.</p>
           <p class="question-copy">Please get a medical evaluation first. Once a doctor has assessed your condition, come back and take the test.</p>
