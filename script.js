@@ -543,21 +543,20 @@ function renderIntro(animate = true) {
       if (introStep.gateQuestion) {
         document.getElementById("gateYesButton").addEventListener("click", () => {
           if (state.isTransitioning) return;
-          lockUi();
           if (introStep.gateYesAborts) {
+            lockUi();
             renderAborted();
           } else {
-            state.introIndex += 1;
-            renderIntro();
+            goToNextIntroStep();
           }
         });
 
         document.getElementById("gateNoButton").addEventListener("click", () => {
           if (state.isTransitioning) return;
-          lockUi();
           if (introStep.gateYesAborts) {
             startQuiz();
           } else {
+            lockUi();
             renderBlocked();
           }
         });
