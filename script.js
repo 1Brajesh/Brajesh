@@ -161,10 +161,10 @@ const resultBands = [
     summary:
       "Your score falls in the high range. Stress and tension are likely playing a meaningful role in your symptoms.",
     note:
-      "If a doctor has already ruled out organic disease, you may want to explore the free online book below.",
-    cta: {
-      label: "Open HealYourPa.in",
-      href: "https://healyourpa.in"
+      "If a doctor has already ruled out organic disease, the book below is often a helpful place to start.",
+    book: {
+      title: "The Straw That Broke the Camel's Back",
+      href: "https://www.amazon.com/Straw-That-Broke-Camels-Back-ebook/dp/B0BKTQWWC9/ref=tmm_kin_swatch_0"
     }
   }
 ];
@@ -602,8 +602,14 @@ function renderIntro(animate = true) {
 function renderResult(animate = true) {
   const score = getScore();
   const result = getResultBand(score);
-  const primaryAction = result.cta
-    ? `<a class="result-link" href="${result.cta.href}" target="_blank" rel="noreferrer">${result.cta.label}</a>`
+  const bookRec = result.book
+    ? `
+        <div class="book-rec">
+          <p class="book-rec__eyebrow">Recommended reading</p>
+          <p class="book-rec__title">${result.book.title}</p>
+          <a class="book-rec__link" href="${result.book.href}" target="_blank" rel="noreferrer">Get the book on Amazon</a>
+        </div>
+      `
     : "";
 
   renderStage(
@@ -617,8 +623,8 @@ function renderResult(animate = true) {
         </div>
         <p class="result-copy">${result.summary}</p>
         <p class="result-note">${result.note}</p>
+        ${bookRec}
         <div class="result-actions">
-          ${primaryAction}
           <button class="result-button" type="button" id="resultRestartButton">Take the test again</button>
         </div>
       </article>
