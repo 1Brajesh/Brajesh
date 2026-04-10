@@ -376,9 +376,16 @@ function renderStage(markup, bindEvents, animate = true) {
 }
 
 function buildQuestionMarkup(question) {
+  const navMarkup = `
+    <div class="intro-actions">
+      <button class="ghost-button" type="button" id="questionBackButton">Back</button>
+      <button class="ghost-button" type="button" id="questionRestartButton">Restart</button>
+    </div>
+  `;
+
   const answerMarkup =
     question.selectionMode === "checkbox-grid"
-      ? buildCheckboxGrid(question)
+      ? buildCheckboxGrid(question) + navMarkup
       : `
           <div class="answer-grid">
             ${question.options
@@ -391,6 +398,7 @@ function buildQuestionMarkup(question) {
               )
               .join("")}
           </div>
+          ${navMarkup}
         `;
 
   return `
@@ -457,6 +465,19 @@ function goToPreviousIntroStep() {
   renderIntro();
 }
 
+function goBackFromQuestion() {
+  if (state.isTransitioning) return;
+  lockUi();
+  if (state.currentIndex === 0) {
+    state.introIndex = introSteps.length - 1;
+    renderIntro();
+  } else {
+    state.currentIndex -= 1;
+    state.answers.pop();
+    renderQuestion();
+  }
+}
+
 function renderQuestion(animate = true) {
   const question = questions[state.currentIndex];
 
@@ -472,14 +493,16 @@ function renderQuestion(animate = true) {
 
           handleAnswer(answer.label, answer.value);
         });
-        return;
+      } else {
+        stage.querySelectorAll(".answer-button").forEach((button) => {
+          button.addEventListener("click", () => {
+            handleAnswer(button.dataset.answerLabel, Number(button.dataset.answerValue));
+          });
+        });
       }
 
-      stage.querySelectorAll(".answer-button").forEach((button) => {
-        button.addEventListener("click", () => {
-          handleAnswer(button.dataset.answerLabel, Number(button.dataset.answerValue));
-        });
-      });
+      document.getElementById("questionBackButton").addEventListener("click", goBackFromQuestion);
+      document.getElementById("questionRestartButton").addEventListener("click", restartQuiz);
     },
     animate
   );
