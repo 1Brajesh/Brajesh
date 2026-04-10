@@ -103,6 +103,21 @@ a {
   backdrop-filter: blur(18px);
 }
 
+.quiz-brand {
+  padding-bottom: 1rem;
+  margin-bottom: 0.4rem;
+  border-bottom: 1px solid var(--line);
+  text-align: center;
+}
+
+.quiz-brand__name {
+  font-family: "Cormorant Garamond", "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
+  font-size: 1.35rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
 .quiz-panel::before {
   content: "";
   position: absolute;
@@ -291,6 +306,15 @@ a {
   color: var(--muted);
   line-height: 1.65;
   font-size: 1rem;
+}
+
+.question-instruction {
+  margin: 0;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--accent);
 }
 
 .detail-list {
@@ -503,6 +527,13 @@ a {
   font-family: "Iowan Old Style", "Palatino Linotype", "Book Antiqua", Georgia, serif;
   font-size: clamp(3.2rem, 10vw, 5rem);
   line-height: 0.92;
+}
+
+.result-range {
+  margin: -0.4rem 0 0;
+  font-size: 0.78rem;
+  color: var(--muted);
+  text-align: center;
 }
 
 .result-score small {

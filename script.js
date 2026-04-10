@@ -137,7 +137,7 @@ const resultBands = [
     key: "low",
     max: 15,
     label: "Low score",
-    headline: "This screen does not strongly suggest a neuroplastic pain pattern.",
+    headline: "Your answers do not strongly suggest a neuroplastic pain pattern.",
     summary:
       "Your score falls in the low range. Based on these answers, the mind-body approach is less likely to be the main explanation for your symptoms.",
     note:
@@ -174,7 +174,6 @@ const introSteps = [
     label: "Welcome",
     paragraphs: [
       "Welcome to this page. I may be able to help you heal yourself from chronic pain without drugs, surgery or physical therapy. You can find out by taking this anonymous 10-question self-check.",
-      "This paintest is designed to help you explore whether a pain pattern may be neuroplastic.",
       "Your answers stay in your browser. No identifying information is captured. No email is required."
     ],
     primaryAction: "Next"
@@ -184,13 +183,13 @@ const introSteps = [
     paragraphs: [
       "This tool is for information only. It is not medical advice and it is not a replacement for seeing a doctor or licensed clinician.",
       "Before acting on your score, make sure a doctor has checked for organic disease or another medical explanation.",
-      "If your score suggests it may help, the results screen will include a link to a free online book for further exploration."
+      "If your score suggests it may help, the results screen will include a book recommendation."
     ],
     gateQuestion: "Have you seen a licensed medical doctor about your condition?",
     secondaryAction: "Back"
   },
   {
-    label: "Before You Begin",
+    label: "One More Thing",
     gateQuestion: "Is your chronic pain or condition life-threatening?",
     gateYesAborts: true,
     secondaryAction: "Back"
@@ -235,13 +234,11 @@ function getResultBand(score) {
 
 function buildQuestionProgress() {
   const progress = ((state.currentIndex + 1) / questions.length) * 100;
-  const percentLabel = progress < 100 ? `<span class="progress-percent">${progress}%</span>` : "";
 
   return `
     <div class="progress-shell stage-progress" aria-hidden="true" style="--progress: ${progress}%;">
       <div class="progress-track">
         <div class="progress-fill"></div>
-        ${percentLabel}
       </div>
     </div>
   `;
@@ -284,7 +281,7 @@ function buildCheckboxGrid(question) {
     .join("");
 
   return `
-    <p class="question-copy">Select all that apply.</p>
+    <p class="question-instruction">Select all that apply</p>
     <div class="checkbox-grid" role="group" aria-label="${question.title} choices">
       ${choices}
     </div>
@@ -519,6 +516,7 @@ function renderBlocked() {
         </div>
         <div class="intro-actions">
           <button class="ghost-button" type="button" id="blockedBackButton">Back</button>
+          <button class="ghost-button" type="button" id="blockedRestartButton">Start over</button>
         </div>
       </article>
     `,
@@ -528,6 +526,7 @@ function renderBlocked() {
         lockUi();
         renderIntro();
       });
+      document.getElementById("blockedRestartButton").addEventListener("click", restartQuiz);
     }
   );
 }
@@ -543,6 +542,7 @@ function renderAborted() {
         </div>
         <div class="intro-actions">
           <button class="ghost-button" type="button" id="abortedBackButton">Back</button>
+          <button class="ghost-button" type="button" id="abortedRestartButton">Start over</button>
         </div>
       </article>
     `,
@@ -552,6 +552,7 @@ function renderAborted() {
         lockUi();
         renderIntro();
       });
+      document.getElementById("abortedRestartButton").addEventListener("click", restartQuiz);
     }
   );
 }
@@ -599,6 +600,14 @@ function renderIntro(animate = true) {
   );
 }
 
+function goBackFromResult() {
+  if (state.isTransitioning) return;
+  lockUi();
+  state.currentIndex = questions.length - 1;
+  state.answers.pop();
+  renderQuestion();
+}
+
 function renderResult(animate = true) {
   const score = getScore();
   const result = getResultBand(score);
@@ -622,17 +631,18 @@ function renderResult(animate = true) {
           <small>out of 50</small>
         </div>
         <p class="result-copy">${result.summary}</p>
+        <p class="result-range">Scores range from 0 to 50</p>
         <p class="result-note">${result.note}</p>
         ${bookRec}
         <div class="result-actions">
+          <button class="result-button" type="button" id="resultBackButton">Back</button>
           <button class="result-button" type="button" id="resultRestartButton">Take the test again</button>
         </div>
       </article>
     `,
     () => {
-      const resultRestartButton = document.getElementById("resultRestartButton");
-
-      resultRestartButton.addEventListener("click", restartQuiz);
+      document.getElementById("resultBackButton").addEventListener("click", goBackFromResult);
+      document.getElementById("resultRestartButton").addEventListener("click", restartQuiz);
     },
     animate
   );
