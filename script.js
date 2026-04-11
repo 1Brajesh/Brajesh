@@ -172,6 +172,7 @@ const resultBands = [
 const introSteps = [
   {
     label: "Welcome",
+    trackPath: "/intro/welcome",
     paragraphs: [
       "Welcome to this page. I may be able to help you heal yourself from chronic pain without drugs, surgery or physical therapy. You can find out by taking this anonymous 10-question self-check.",
       "Your answers stay in your browser. No identifying information is captured. No email is required."
@@ -180,6 +181,7 @@ const introSteps = [
   },
   {
     label: "Before You Begin",
+    trackPath: "/intro/before-you-begin",
     paragraphs: [
       "This tool is for information only. It is not medical advice and it is not a replacement for seeing a doctor or licensed clinician.",
       "Before acting on your score, make sure a doctor has checked for organic disease or another medical explanation.",
@@ -190,6 +192,7 @@ const introSteps = [
   },
   {
     label: "One More Thing",
+    trackPath: "/intro/one-more-thing",
     gateQuestion: "Is your chronic pain or condition life-threatening?",
     gateYesAborts: true,
     secondaryAction: "Back"
@@ -230,6 +233,18 @@ function getScore() {
 
 function getResultBand(score) {
   return resultBands.find((band) => score <= band.max);
+}
+
+function trackPage(path) {
+  if (window.goatcounter && window.goatcounter.count) {
+    window.goatcounter.count({ path: path });
+  } else {
+    setTimeout(function () {
+      if (window.goatcounter && window.goatcounter.count) {
+        window.goatcounter.count({ path: path });
+      }
+    }, 2000);
+  }
 }
 
 function buildQuestionProgress() {
@@ -476,6 +491,7 @@ function goBackFromQuestion() {
 }
 
 function renderQuestion(animate = true) {
+  trackPage(`/question/${state.currentIndex + 1}`);
   const question = questions[state.currentIndex];
 
   renderStage(
@@ -506,6 +522,7 @@ function renderQuestion(animate = true) {
 }
 
 function renderBlocked() {
+  trackPage('/screened/no-doctor');
   renderStage(
     `
       <article class="stage-card intro-card">
@@ -532,6 +549,7 @@ function renderBlocked() {
 }
 
 function renderAborted() {
+  trackPage('/screened/life-threatening');
   renderStage(
     `
       <article class="stage-card intro-card">
@@ -558,6 +576,7 @@ function renderAborted() {
 }
 
 function renderIntro(animate = true) {
+  trackPage(introSteps[state.introIndex].trackPath);
   renderStage(
     buildIntroMarkup(),
     () => {
@@ -611,6 +630,7 @@ function goBackFromResult() {
 function renderResult(animate = true) {
   const score = getScore();
   const result = getResultBand(score);
+  trackPage(`/result/${result.key}`);
   const bookRec = result.book
     ? `
         <div class="book-rec">
