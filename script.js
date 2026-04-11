@@ -636,7 +636,7 @@ function renderResult(animate = true) {
         <div class="book-rec">
           <p class="book-rec__eyebrow">Recommended reading</p>
           <p class="book-rec__title">${result.book.title}</p>
-          <a class="book-rec__link" href="${result.book.href}" target="_blank" rel="noreferrer">Get the book on Amazon</a>
+          <a class="book-rec__link" id="resultBookLink" href="${result.book.href}" target="_blank" rel="noreferrer">Get the book on Amazon</a>
         </div>
       `
     : "";
@@ -663,6 +663,10 @@ function renderResult(animate = true) {
     () => {
       document.getElementById("resultBackButton").addEventListener("click", goBackFromResult);
       document.getElementById("resultRestartButton").addEventListener("click", restartQuiz);
+      const bookLink = document.getElementById("resultBookLink");
+      if (bookLink) {
+        bookLink.addEventListener("click", () => trackPage("/result/book-click"));
+      }
     },
     animate
   );
