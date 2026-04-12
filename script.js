@@ -175,7 +175,7 @@ const introSteps = [
     trackPath: "/intro/welcome",
     paragraphs: [
       "Welcome to this page. I may be able to help you heal yourself from chronic pain without drugs, surgery or physical therapy. You can find out by taking this anonymous 10-question self-check.",
-      "Your answers stay in your browser. No identifying information is captured. No email is required."
+      "Your answers stay in your browser. No identifying information is captured. You get a score right away. No email is required."
     ],
     primaryAction: "Next"
   },
