@@ -260,6 +260,10 @@
       overflow: hidden;
     }
 
+    .poem.poem-flash {
+      animation: poem-flash 1.6s ease;
+    }
+
     .poem-body {
       display: grid;
       gap: 16px;
@@ -316,6 +320,20 @@
       color: var(--muted);
       padding: 26px;
       text-align: center;
+    }
+
+    @keyframes poem-flash {
+      0% {
+        box-shadow: 0 0 0 0 rgba(134, 199, 195, 0.46);
+      }
+
+      40% {
+        box-shadow: 0 0 0 4px rgba(134, 199, 195, 0.32);
+      }
+
+      100% {
+        box-shadow: 0 0 0 0 rgba(134, 199, 195, 0);
+      }
     }
 
     @media (max-width: 720px) {
@@ -478,6 +496,29 @@
       return state.comments.get(poemId) || [];
     }
 
+    function setButtonBusy(button, isBusy, busyText) {
+      if (!button.dataset.idleText) {
+        button.dataset.idleText = button.textContent;
+      }
+      button.disabled = isBusy;
+      button.textContent = isBusy ? busyText : button.dataset.idleText;
+    }
+
+    function highlightPoem(poemId) {
+      if (!poemId) return;
+
+      const poemElement = elements.poemList.querySelector(`[data-poem-id="${poemId}"]`);
+      if (!poemElement) return;
+
+      poemElement.scrollIntoView({ behavior: "smooth", block: "center" });
+      poemElement.classList.remove("poem-flash");
+      void poemElement.offsetWidth;
+      poemElement.classList.add("poem-flash");
+      window.setTimeout(() => {
+        poemElement.classList.remove("poem-flash");
+      }, 1600);
+    }
+
     async function loadAdminData() {
       if (!state.token) {
         showLogin();
@@ -624,24 +665,34 @@
 
     elements.newPoemForm.addEventListener("submit", async (event) => {
       event.preventDefault();
-      const data = new FormData(event.currentTarget);
-      const { error } = await db.rpc("brajesh_admin_create_poem", {
-        admin_token: state.token,
-        poem_title: String(data.get("title") || "").trim(),
-        poem_slug: String(data.get("slug") || "").trim(),
-        poem_body: String(data.get("body") || "").trim(),
-        poem_published: data.get("published") === "on",
-      });
+      const form = event.currentTarget;
+      const submitButton = form.querySelector("button[type='submit']");
+      const data = new FormData(form);
 
-      if (error) {
-        setStatus(error.message, "error");
-        return;
+      setButtonBusy(submitButton, true, "Adding...");
+      setStatus("Adding poem.");
+
+      try {
+        const { data: poemId, error } = await db.rpc("brajesh_admin_create_poem", {
+          admin_token: state.token,
+          poem_title: String(data.get("title") || "").trim(),
+          poem_slug: String(data.get("slug") || "").trim(),
+          poem_body: String(data.get("body") || "").trim(),
+          poem_published: data.get("published") === "on",
+        });
+
+        if (error) throw error;
+
+        form.reset();
+        form.elements.published.checked = true;
+        await loadAdminData();
+        highlightPoem(poemId);
+        setStatus("Poem added.", "ok");
+      } catch (error) {
+        setStatus(error.message || "Could not add poem.", "error");
+      } finally {
+        setButtonBusy(submitButton, false, "Adding...");
       }
-
-      event.currentTarget.reset();
-      event.currentTarget.elements.published.checked = true;
-      await loadAdminData();
-      setStatus("Poem added.", "ok");
     });
 
     elements.poemList.addEventListener("submit", async (event) => {
