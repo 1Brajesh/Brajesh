@@ -804,43 +804,48 @@
         setMessage("Loading.");
       }
 
-      const [poemsResult, statsResult, commentsResult, likesResult] = await Promise.all([
-        db.from("brajesh_poems")
-          .select("id, slug, title, body, display_order, published, created_at, updated_at")
-          .order("display_order", { ascending: true }),
-        db.from("brajesh_poem_stats")
-          .select("poem_id, likes_count, comments_count"),
-        db.from("brajesh_comments")
-          .select("id, poem_id, author_name, body, approved, created_at")
-          .order("created_at", { ascending: true }),
-        db.rpc("brajesh_liked_poems", { target_liker_key: state.clientKey }),
-      ]);
+      try {
+        const [poemsResult, statsResult, commentsResult, likesResult] = await Promise.all([
+          db.from("brajesh_poems")
+            .select("id, slug, title, body, display_order, published, created_at, updated_at")
+            .order("display_order", { ascending: true }),
+          db.from("brajesh_poem_stats")
+            .select("poem_id, likes_count, comments_count"),
+          db.from("brajesh_comments")
+            .select("id, poem_id, author_name, body, approved, created_at")
+            .order("created_at", { ascending: true }),
+          db.rpc("brajesh_liked_poems", { target_liker_key: state.clientKey }),
+        ]);
 
-      if (!options.silent) {
-        document.body.classList.remove("loading");
-      }
-
-      const error = poemsResult.error || statsResult.error || commentsResult.error || likesResult.error;
-      if (error) {
-        setMessage(error.message, "error");
-        return;
-      }
-
-      state.poems = poemsResult.data || [];
-      state.stats = new Map((statsResult.data || []).map((row) => [row.poem_id, row]));
-      state.likedPoems = new Set((likesResult.data || []).map((row) => row.poem_id));
-      state.comments = new Map();
-
-      for (const comment of commentsResult.data || []) {
-        if (!state.comments.has(comment.poem_id)) {
-          state.comments.set(comment.poem_id, []);
+        const error = poemsResult.error || statsResult.error || commentsResult.error || likesResult.error;
+        if (error) {
+          setMessage(error.message, "error");
+          return;
         }
-        state.comments.get(comment.poem_id).push(comment);
-      }
 
-      render();
-      if (!options.silent) {
-        setMessage("");
+        state.poems = poemsResult.data || [];
+        state.stats = new Map((statsResult.data || []).map((row) => [row.poem_id, row]));
+        state.likedPoems = new Set((likesResult.data || []).map((row) => row.poem_id));
+        state.comments = new Map();
+
+        for (const comment of commentsResult.data || []) {
+          if (!state.comments.has(comment.poem_id)) {
+            state.comments.set(comment.poem_id, []);
+          }
+          state.comments.get(comment.poem_id).push(comment);
+        }
+
+        render();
+
+        if (!options.silent) {
+          setMessage("");
+        }
+      } catch (error) {
+        setMessage(error.message, "error");
+      } finally {
+        if (!options.silent) {
+          document.body.classList.remove("loading");
+        }
       }
     }
 
@@ -1156,10 +1161,15 @@
     });
 
     elements.signOutButton.addEventListener("click", async () => {
-      await db.auth.signOut();
+      const { error } = await db.auth.signOut();
+      if (error) {
+        setMessage(error.message, "error");
+        return;
+      }
+
       state.session = null;
       updateAuthViews();
-      await loadData();
+      render();
     });
 
     elements.newPoemForm.addEventListener("submit", async (event) => {
