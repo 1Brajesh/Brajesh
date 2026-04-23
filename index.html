@@ -3,15 +3,1295 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Brajesh</title>
+  <title>Brajesh Poems</title>
   <style>
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html, body { width: 100%; height: 100%; background: #000; }
-    body { display: grid; place-items: center; min-height: 100svh; }
-    img { display: block; max-width: 100%; max-height: 100svh; object-fit: contain; }
+    :root {
+      color-scheme: dark;
+      --page: #11100f;
+      --page-soft: #171413;
+      --panel: #211d1a;
+      --panel-soft: #2a2420;
+      --ink: #f5efe7;
+      --muted: #b7aa9c;
+      --faint: #82776d;
+      --line: #3d352f;
+      --line-strong: #594d44;
+      --red: #bd6570;
+      --red-soft: rgba(189, 101, 112, 0.16);
+      --teal: #86c7c3;
+      --teal-soft: rgba(134, 199, 195, 0.13);
+      --gold: #d6b56f;
+      --shadow: 0 26px 80px rgba(0, 0, 0, 0.32);
+      --serif: Georgia, "Times New Roman", serif;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        linear-gradient(90deg, rgba(134, 199, 195, 0.06), transparent 22%, transparent 78%, rgba(189, 101, 112, 0.06)),
+        linear-gradient(180deg, #191514 0%, #11100f 48%, #0c0b0a 100%);
+      color: var(--ink);
+      font-family: var(--sans);
+      line-height: 1.5;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background-image:
+        linear-gradient(rgba(245, 239, 231, 0.025) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(245, 239, 231, 0.018) 1px, transparent 1px);
+      background-size: 72px 72px;
+      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.8), transparent 70%);
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .masthead {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      border-bottom: 1px solid rgba(245, 239, 231, 0.1);
+      background: rgba(17, 16, 15, 0.88);
+      backdrop-filter: blur(18px);
+    }
+
+    .masthead-inner,
+    .page {
+      width: min(1120px, calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    .masthead-inner {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      min-width: 0;
+      text-decoration: none;
+    }
+
+    .brand strong {
+      font-family: var(--serif);
+      font-size: clamp(1.9rem, 4vw, 3.35rem);
+      font-weight: 400;
+      line-height: 0.9;
+      letter-spacing: 0;
+    }
+
+    .brand span {
+      color: var(--muted);
+      font-size: 0.92rem;
+      white-space: nowrap;
+    }
+
+    .sort-tabs {
+      display: inline-flex;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(245, 239, 231, 0.04);
+      padding: 3px;
+    }
+
+    .sort-tabs button,
+    .admin-toggle,
+    .ghost-button,
+    .danger-button,
+    .primary-button {
+      min-height: 38px;
+      border-radius: 7px;
+      border: 1px solid transparent;
+      padding: 0 12px;
+      color: var(--ink);
+      background: transparent;
+    }
+
+    .sort-tabs button {
+      color: var(--muted);
+      min-width: 76px;
+    }
+
+    .sort-tabs button[aria-pressed="true"] {
+      background: var(--ink);
+      color: #171312;
+    }
+
+    .admin-toggle,
+    .ghost-button {
+      border-color: var(--line);
+      background: rgba(245, 239, 231, 0.04);
+      color: var(--muted);
+    }
+
+    .admin-toggle[aria-expanded="true"],
+    .ghost-button:hover {
+      border-color: var(--line-strong);
+      color: var(--ink);
+    }
+
+    .primary-button {
+      border-color: transparent;
+      background: var(--teal);
+      color: #0c1515;
+      font-weight: 700;
+    }
+
+    .danger-button {
+      border-color: rgba(189, 101, 112, 0.42);
+      background: rgba(189, 101, 112, 0.1);
+      color: #ffd5d9;
+    }
+
+    .page {
+      position: relative;
+      padding: 58px 0 86px;
+    }
+
+    .intro {
+      display: grid;
+      gap: 24px;
+      max-width: 860px;
+      padding-bottom: 40px;
+    }
+
+    .kicker {
+      margin: 0;
+      color: var(--teal);
+      font-size: 0.82rem;
+      font-weight: 800;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .intro h1 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: clamp(3rem, 10vw, 8.6rem);
+      font-weight: 400;
+      line-height: 0.9;
+      letter-spacing: 0;
+    }
+
+    .intro p:last-child {
+      max-width: 600px;
+      margin: 0;
+      color: var(--muted);
+      font-family: var(--serif);
+      font-size: clamp(1.18rem, 2vw, 1.48rem);
+      line-height: 1.55;
+    }
+
+    .status-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      min-height: 34px;
+      margin-bottom: 28px;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(245, 239, 231, 0.04);
+      color: var(--muted);
+      padding: 0 11px;
+      font-size: 0.88rem;
+    }
+
+    .site-message {
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .site-message[data-tone="error"] {
+      color: #ffb8bf;
+    }
+
+    .site-message[data-tone="ok"] {
+      color: var(--teal);
+    }
+
+    .admin-panel {
+      margin: 0 0 32px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(33, 29, 26, 0.82);
+      box-shadow: var(--shadow);
+      padding: clamp(18px, 3vw, 26px);
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    .panel-head h2,
+    .index-panel h2 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: 1.75rem;
+      font-weight: 400;
+      line-height: 1;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+      align-items: start;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field span,
+    .check-field span {
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(9, 8, 8, 0.46);
+      color: var(--ink);
+      padding: 11px 12px;
+      outline: none;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(134, 199, 195, 0.12);
+    }
+
+    textarea {
+      min-height: 156px;
+      resize: vertical;
+      font-family: var(--serif);
+      line-height: 1.45;
+    }
+
+    .check-field {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+      color: var(--muted);
+    }
+
+    .check-field input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--teal);
+    }
+
+    .workbench {
+      display: grid;
+      grid-template-columns: 250px minmax(0, 1fr);
+      gap: clamp(26px, 5vw, 56px);
+      align-items: start;
+      border-top: 1px solid var(--line);
+      padding-top: 32px;
+    }
+
+    .index-panel {
+      position: sticky;
+      top: 94px;
+      display: grid;
+      gap: 16px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(33, 29, 26, 0.72);
+      padding: 18px;
+    }
+
+    .index-list {
+      display: grid;
+      gap: 6px;
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .index-list a {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 12px;
+      min-height: 32px;
+      color: var(--muted);
+      text-decoration: none;
+    }
+
+    .index-list a:hover {
+      color: var(--ink);
+    }
+
+    .index-list strong {
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      font-weight: 600;
+    }
+
+    .index-list span {
+      color: var(--faint);
+      font-size: 0.82rem;
+    }
+
+    .poem-list {
+      display: grid;
+      gap: 24px;
+    }
+
+    .poem {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(42, 36, 32, 0.9), rgba(27, 23, 21, 0.92));
+      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+    }
+
+    .poem::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 5px;
+      background: var(--red);
+      opacity: 0.84;
+    }
+
+    .poem-inner {
+      display: grid;
+      gap: 20px;
+      padding: clamp(24px, 4vw, 42px);
+    }
+
+    .poem-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      color: var(--faint);
+      font-size: 0.83rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .hidden-label {
+      border: 1px solid rgba(214, 181, 111, 0.35);
+      border-radius: 999px;
+      color: var(--gold);
+      padding: 2px 7px;
+      letter-spacing: 0;
+      text-transform: none;
+    }
+
+    .poem h2 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: clamp(2.25rem, 5vw, 4.2rem);
+      font-weight: 400;
+      line-height: 0.95;
+      letter-spacing: 0;
+    }
+
+    .poem-text {
+      margin: 0;
+      white-space: pre-line;
+      font-family: var(--serif);
+      font-size: clamp(1.38rem, 2.8vw, 2.15rem);
+      line-height: 1.45;
+    }
+
+    .poem-text em {
+      color: #ffc4ca;
+      font-style: italic;
+    }
+
+    .poem-actions,
+    .admin-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      align-items: center;
+    }
+
+    .action-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 38px;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(245, 239, 231, 0.04);
+      color: var(--muted);
+      padding: 0 12px;
+    }
+
+    .action-button:hover:not(:disabled) {
+      border-color: var(--line-strong);
+      color: var(--ink);
+    }
+
+    .action-button.like-button {
+      color: #ffc2c9;
+    }
+
+    .action-button:disabled {
+      cursor: default;
+      opacity: 0.72;
+    }
+
+    .anchor-link {
+      color: var(--faint);
+      text-decoration: none;
+      font-size: 0.92rem;
+    }
+
+    .anchor-link:hover {
+      color: var(--ink);
+      text-decoration: underline;
+    }
+
+    .comments {
+      display: grid;
+      gap: 16px;
+      border-top: 1px solid var(--line);
+      background: rgba(11, 10, 10, 0.22);
+      padding: 20px clamp(24px, 4vw, 42px) 26px;
+    }
+
+    .comment-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .comment {
+      display: grid;
+      gap: 3px;
+      border-left: 3px solid var(--teal);
+      padding-left: 12px;
+    }
+
+    .comment strong {
+      color: var(--ink);
+      font-size: 0.9rem;
+    }
+
+    .comment p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .comment-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .comment-form {
+      display: grid;
+      grid-template-columns: minmax(120px, 0.35fr) minmax(0, 1fr) auto;
+      gap: 9px;
+    }
+
+    .comment-form textarea {
+      min-height: 44px;
+      font-family: var(--sans);
+    }
+
+    .edit-form {
+      display: grid;
+      gap: 12px;
+      border-top: 1px solid var(--line);
+      background: rgba(134, 199, 195, 0.06);
+      padding: 20px clamp(24px, 4vw, 42px) 26px;
+    }
+
+    .edit-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .empty-state {
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      font-family: var(--serif);
+      font-size: 1.35rem;
+      padding: 32px;
+      text-align: center;
+    }
+
+    .loading {
+      opacity: 0.68;
+      pointer-events: none;
+    }
+
+    @media (max-width: 920px) {
+      .masthead-inner {
+        grid-template-columns: 1fr;
+        align-items: start;
+      }
+
+      .sort-tabs {
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      .sort-tabs button {
+        flex: 1;
+      }
+
+      .admin-toggle {
+        width: 100%;
+      }
+
+      .workbench {
+        grid-template-columns: 1fr;
+      }
+
+      .index-panel {
+        position: static;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .masthead-inner,
+      .page {
+        width: min(100% - 22px, 1120px);
+      }
+
+      .brand {
+        display: grid;
+        gap: 4px;
+      }
+
+      .brand span {
+        white-space: normal;
+      }
+
+      .page {
+        padding-top: 36px;
+      }
+
+      .form-row,
+      .comment-form {
+        grid-template-columns: 1fr;
+      }
+
+      .primary-button,
+      .ghost-button,
+      .danger-button {
+        width: 100%;
+      }
+
+      .poem-inner {
+        padding: 24px 20px 22px 24px;
+      }
+    }
   </style>
 </head>
 <body>
-  <img src="brajesh.jpeg" alt="Brajesh">
+  <header class="masthead">
+    <div class="masthead-inner">
+      <a class="brand" href="#top" aria-label="Brajesh poems home">
+        <strong>Brajesh</strong>
+        <span>poems, complaints, rhymes</span>
+      </a>
+      <nav class="sort-tabs" aria-label="Poem order">
+        <button type="button" data-sort="floated" aria-pressed="true">Floated</button>
+        <button type="button" data-sort="newest" aria-pressed="false">Newest</button>
+        <button type="button" data-sort="original" aria-pressed="false">Original</button>
+      </nav>
+      <button class="admin-toggle" id="adminToggle" type="button" aria-expanded="false" aria-controls="adminPanel">Admin</button>
+    </div>
+  </header>
+
+  <main class="page" id="top">
+    <section class="intro" aria-labelledby="page-title">
+      <p class="kicker">Short poems</p>
+      <h1 id="page-title">Truth first. Rhyme if it survives.</h1>
+      <p>A small room for sharp poems, strange jokes, heavy feelings, and the occasional grocery bag.</p>
+    </section>
+
+    <div class="status-bar" id="statusBar">
+      <span class="pill" id="poemCount">0 poems</span>
+      <span class="pill" id="likeCount">0 likes</span>
+      <span class="pill" id="commentCount">0 comments</span>
+      <span class="site-message" id="siteMessage" role="status"></span>
+    </div>
+
+    <section class="admin-panel" id="adminPanel" hidden>
+      <div id="loginView">
+        <div class="panel-head">
+          <h2>Admin</h2>
+        </div>
+        <form class="form-row" id="loginForm">
+          <label class="field">
+            <span>Email</span>
+            <input id="loginEmail" name="email" type="email" autocomplete="email" placeholder="email@example.com" required>
+          </label>
+          <button class="primary-button" type="submit">Send Link</button>
+        </form>
+      </div>
+
+      <div id="adminView" hidden>
+        <div class="panel-head">
+          <h2>Admin</h2>
+          <button class="ghost-button" id="signOutButton" type="button">Sign Out</button>
+        </div>
+        <form class="form-grid" id="newPoemForm">
+          <div class="form-row">
+            <label class="field">
+              <span>Title</span>
+              <input name="title" autocomplete="off" required>
+            </label>
+            <label class="field">
+              <span>Slug</span>
+              <input name="slug" autocomplete="off" placeholder="auto">
+            </label>
+          </div>
+          <label class="field">
+            <span>Poem</span>
+            <textarea name="body" required></textarea>
+          </label>
+          <div class="edit-actions">
+            <label class="check-field">
+              <input name="published" type="checkbox" checked>
+              <span>Published</span>
+            </label>
+            <button class="primary-button" type="submit">Add Poem</button>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <section class="workbench" aria-label="Poems">
+      <aside class="index-panel" aria-labelledby="index-title">
+        <h2 id="index-title">Index</h2>
+        <ol class="index-list" id="indexList"></ol>
+      </aside>
+
+      <section class="poem-list" id="poemList" aria-live="polite">
+        <div class="empty-state">Loading poems.</div>
+      </section>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://pjbpghknzqmwfykbtvzp.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_c-jEz8WNtOn5etyRxCrKNw_WIU-GBPE";
+    const ADMIN_EMAIL = "engineerbk@gmail.com";
+    const CLIENT_KEY_STORAGE = "brajesh_client_key";
+    const COMMENT_NAME_STORAGE = "brajesh_comment_name";
+
+    const state = {
+      poems: [],
+      stats: new Map(),
+      comments: new Map(),
+      likedPoems: new Set(),
+      openComments: new Set(),
+      editingPoems: new Set(),
+      sortMode: "floated",
+      session: null,
+      isAdmin: false,
+      clientKey: getClientKey(),
+    };
+
+    const elements = {
+      adminPanel: document.querySelector("#adminPanel"),
+      adminToggle: document.querySelector("#adminToggle"),
+      adminView: document.querySelector("#adminView"),
+      loginView: document.querySelector("#loginView"),
+      loginForm: document.querySelector("#loginForm"),
+      loginEmail: document.querySelector("#loginEmail"),
+      newPoemForm: document.querySelector("#newPoemForm"),
+      signOutButton: document.querySelector("#signOutButton"),
+      poemList: document.querySelector("#poemList"),
+      indexList: document.querySelector("#indexList"),
+      poemCount: document.querySelector("#poemCount"),
+      likeCount: document.querySelector("#likeCount"),
+      commentCount: document.querySelector("#commentCount"),
+      siteMessage: document.querySelector("#siteMessage"),
+      sortButtons: Array.from(document.querySelectorAll("[data-sort]")),
+    };
+
+    let db = null;
+
+    function getClientKey() {
+      const existing = localStorage.getItem(CLIENT_KEY_STORAGE);
+      if (existing) return existing;
+
+      const generated = crypto.randomUUID
+        ? crypto.randomUUID()
+        : `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}`;
+
+      localStorage.setItem(CLIENT_KEY_STORAGE, generated);
+      return generated;
+    }
+
+    function setMessage(text, tone = "") {
+      elements.siteMessage.textContent = text;
+      elements.siteMessage.dataset.tone = tone;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function renderBody(value) {
+      return escapeHtml(value).replace(/\*([^*]+)\*/g, "<em>$1</em>");
+    }
+
+    function slugify(value) {
+      return String(value)
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "") || `poem-${Date.now().toString(36)}`;
+    }
+
+    function isAdminSession(session) {
+      return session?.user?.email?.toLowerCase() === ADMIN_EMAIL;
+    }
+
+    function updateAuthViews() {
+      state.isAdmin = isAdminSession(state.session);
+      elements.loginView.hidden = state.isAdmin;
+      elements.adminView.hidden = !state.isAdmin;
+      elements.adminToggle.textContent = state.isAdmin ? "Admin On" : "Admin";
+    }
+
+    function getStats(poemId) {
+      return state.stats.get(poemId) || { likes_count: 0, comments_count: 0 };
+    }
+
+    function getComments(poemId) {
+      return state.comments.get(poemId) || [];
+    }
+
+    function orderedPoems() {
+      const poems = [...state.poems];
+
+      if (state.sortMode === "newest") {
+        return poems.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+      }
+
+      if (state.sortMode === "original") {
+        return poems.sort((a, b) => a.display_order - b.display_order);
+      }
+
+      return poems.sort((a, b) => {
+        const likeDiff = getStats(b.id).likes_count - getStats(a.id).likes_count;
+        if (likeDiff !== 0) return likeDiff;
+        return a.display_order - b.display_order;
+      });
+    }
+
+    async function loadData() {
+      if (!db) return;
+
+      document.body.classList.add("loading");
+      setMessage("Loading.");
+
+      const [poemsResult, statsResult, commentsResult, likesResult] = await Promise.all([
+        db.from("brajesh_poems")
+          .select("id, slug, title, body, display_order, published, created_at, updated_at")
+          .order("display_order", { ascending: true }),
+        db.from("brajesh_poem_stats")
+          .select("poem_id, likes_count, comments_count"),
+        db.from("brajesh_comments")
+          .select("id, poem_id, author_name, body, approved, created_at")
+          .order("created_at", { ascending: true }),
+        db.from("brajesh_poem_likes")
+          .select("poem_id")
+          .eq("liker_key", state.clientKey),
+      ]);
+
+      document.body.classList.remove("loading");
+
+      const error = poemsResult.error || statsResult.error || commentsResult.error || likesResult.error;
+      if (error) {
+        setMessage(error.message, "error");
+        return;
+      }
+
+      state.poems = poemsResult.data || [];
+      state.stats = new Map((statsResult.data || []).map((row) => [row.poem_id, row]));
+      state.likedPoems = new Set((likesResult.data || []).map((row) => row.poem_id));
+      state.comments = new Map();
+
+      for (const comment of commentsResult.data || []) {
+        if (!state.comments.has(comment.poem_id)) {
+          state.comments.set(comment.poem_id, []);
+        }
+        state.comments.get(comment.poem_id).push(comment);
+      }
+
+      render();
+      setMessage("");
+    }
+
+    function render() {
+      const poems = orderedPoems();
+      const totalLikes = poems.reduce((sum, poem) => sum + getStats(poem.id).likes_count, 0);
+      const totalComments = poems.reduce((sum, poem) => sum + getStats(poem.id).comments_count, 0);
+
+      elements.poemCount.textContent = `${poems.length} ${poems.length === 1 ? "poem" : "poems"}`;
+      elements.likeCount.textContent = `${totalLikes} ${totalLikes === 1 ? "like" : "likes"}`;
+      elements.commentCount.textContent = `${totalComments} ${totalComments === 1 ? "comment" : "comments"}`;
+
+      elements.indexList.innerHTML = poems.map((poem) => {
+        const stats = getStats(poem.id);
+        return `
+          <li>
+            <a href="#${escapeHtml(poem.slug)}">
+              <strong>${escapeHtml(poem.title)}</strong>
+              <span>${stats.likes_count}</span>
+            </a>
+          </li>
+        `;
+      }).join("");
+
+      elements.poemList.innerHTML = poems.length
+        ? poems.map((poem, index) => renderPoem(poem, index)).join("")
+        : '<div class="empty-state">No poems here yet.</div>';
+    }
+
+    function renderPoem(poem, index) {
+      const stats = getStats(poem.id);
+      const comments = getComments(poem.id);
+      const liked = state.likedPoems.has(poem.id);
+      const commentsOpen = state.openComments.has(poem.id);
+      const editing = state.editingPoems.has(poem.id);
+
+      return `
+        <article class="poem" id="${escapeHtml(poem.slug)}" data-poem-id="${poem.id}">
+          <div class="poem-inner">
+            <div class="poem-meta">
+              <span>${String(index + 1).padStart(2, "0")}</span>
+              ${poem.published ? "" : '<span class="hidden-label">Hidden</span>'}
+            </div>
+            <h2>${escapeHtml(poem.title)}</h2>
+            <p class="poem-text">${renderBody(poem.body)}</p>
+            <div class="poem-actions">
+              <button class="action-button like-button" type="button" data-action="like" ${liked ? "disabled" : ""}>
+                <span aria-hidden="true">&hearts;</span>
+                <span>${liked ? "Liked" : "Like"}</span>
+                <span>${stats.likes_count}</span>
+              </button>
+              <button class="action-button" type="button" data-action="comments">
+                <span>Comments</span>
+                <span>${stats.comments_count}</span>
+              </button>
+              <a class="anchor-link" href="#${escapeHtml(poem.slug)}">#${escapeHtml(poem.slug)}</a>
+            </div>
+            ${state.isAdmin ? `
+              <div class="admin-actions">
+                <button class="ghost-button" type="button" data-action="edit">${editing ? "Close Edit" : "Edit"}</button>
+                <button class="danger-button" type="button" data-action="delete-poem">Delete</button>
+              </div>
+            ` : ""}
+          </div>
+          ${commentsOpen ? renderComments(poem, comments) : ""}
+          ${editing && state.isAdmin ? renderEditForm(poem) : ""}
+        </article>
+      `;
+    }
+
+    function renderComments(poem, comments) {
+      const savedName = localStorage.getItem(COMMENT_NAME_STORAGE) || "";
+      return `
+        <section class="comments" aria-label="Comments on ${escapeHtml(poem.title)}">
+          <div class="comment-list">
+            ${comments.length ? comments.map(renderComment).join("") : '<p class="site-message">No comments yet.</p>'}
+          </div>
+          <form class="comment-form" data-action="comment">
+            <input name="author_name" autocomplete="name" placeholder="Name" value="${escapeHtml(savedName)}">
+            <textarea name="body" placeholder="Comment" required></textarea>
+            <button class="primary-button" type="submit">Post</button>
+          </form>
+        </section>
+      `;
+    }
+
+    function renderComment(comment) {
+      return `
+        <div class="comment" data-comment-id="${comment.id}">
+          <div class="comment-meta">
+            <strong>${escapeHtml(comment.author_name)}</strong>
+            ${state.isAdmin ? '<button class="action-button" type="button" data-action="delete-comment">Delete</button>' : ""}
+          </div>
+          <p>${escapeHtml(comment.body)}</p>
+        </div>
+      `;
+    }
+
+    function renderEditForm(poem) {
+      return `
+        <form class="edit-form" data-action="save-edit">
+          <div class="form-row">
+            <label class="field">
+              <span>Title</span>
+              <input name="title" value="${escapeHtml(poem.title)}" required>
+            </label>
+            <label class="field">
+              <span>Slug</span>
+              <input name="slug" value="${escapeHtml(poem.slug)}" required>
+            </label>
+          </div>
+          <label class="field">
+            <span>Poem</span>
+            <textarea name="body" required>${escapeHtml(poem.body)}</textarea>
+          </label>
+          <div class="edit-actions">
+            <label class="check-field">
+              <input name="published" type="checkbox" ${poem.published ? "checked" : ""}>
+              <span>Published</span>
+            </label>
+            <button class="primary-button" type="submit">Save</button>
+          </div>
+        </form>
+      `;
+    }
+
+    function findPoem(id) {
+      return state.poems.find((poem) => poem.id === id);
+    }
+
+    async function likePoem(poemId) {
+      if (state.likedPoems.has(poemId)) return;
+
+      const { error } = await db.from("brajesh_poem_likes").insert({
+        poem_id: poemId,
+        liker_key: state.clientKey,
+      });
+
+      if (error && error.code !== "23505") {
+        setMessage(error.message, "error");
+        return;
+      }
+
+      state.likedPoems.add(poemId);
+      await loadData();
+    }
+
+    async function addComment(poemId, form) {
+      const data = new FormData(form);
+      const authorName = String(data.get("author_name") || "Anonymous").trim() || "Anonymous";
+      const body = String(data.get("body") || "").trim();
+
+      if (!body) return;
+
+      localStorage.setItem(COMMENT_NAME_STORAGE, authorName);
+
+      const { error } = await db.from("brajesh_comments").insert({
+        poem_id: poemId,
+        author_name: authorName.slice(0, 80),
+        body: body.slice(0, 2000),
+        client_key: state.clientKey,
+        approved: true,
+      });
+
+      if (error) {
+        setMessage(error.message, "error");
+        return;
+      }
+
+      state.openComments.add(poemId);
+      await loadData();
+    }
+
+    async function addPoem(form) {
+      if (!state.isAdmin) return;
+
+      const data = new FormData(form);
+      const title = String(data.get("title") || "").trim();
+      const body = String(data.get("body") || "").trim();
+      const rawSlug = String(data.get("slug") || "").trim();
+      const published = data.get("published") === "on";
+
+      if (!title || !body) return;
+
+      const maxOrder = state.poems.reduce((max, poem) => Math.max(max, poem.display_order), 0);
+      const slug = slugify(rawSlug || title);
+
+      const { error } = await db.from("brajesh_poems").insert({
+        title,
+        slug,
+        body,
+        display_order: maxOrder + 10,
+        published,
+      });
+
+      if (error) {
+        setMessage(error.message, "error");
+        return;
+      }
+
+      form.reset();
+      form.elements.published.checked = true;
+      state.sortMode = "newest";
+      updateSortButtons();
+      await loadData();
+    }
+
+    async function savePoem(poemId, form) {
+      if (!state.isAdmin) return;
+
+      const data = new FormData(form);
+      const title = String(data.get("title") || "").trim();
+      const slug = slugify(String(data.get("slug") || title));
+      const body = String(data.get("body") || "").trim();
+      const published = data.get("published") === "on";
+
+      if (!title || !body) return;
+
+      const { error } = await db.from("brajesh_poems")
+        .update({ title, slug, body, published })
+        .eq("id", poemId);
+
+      if (error) {
+        setMessage(error.message, "error");
+        return;
+      }
+
+      state.editingPoems.delete(poemId);
+      await loadData();
+    }
+
+    async function deletePoem(poemId) {
+      if (!state.isAdmin) return;
+      const poem = findPoem(poemId);
+      if (!poem || !window.confirm(`Delete "${poem.title}"?`)) return;
+
+      const { error } = await db.from("brajesh_poems").delete().eq("id", poemId);
+      if (error) {
+        setMessage(error.message, "error");
+        return;
+      }
+
+      await loadData();
+    }
+
+    async function deleteComment(commentId) {
+      if (!state.isAdmin) return;
+
+      const { error } = await db.from("brajesh_comments").delete().eq("id", commentId);
+      if (error) {
+        setMessage(error.message, "error");
+        return;
+      }
+
+      await loadData();
+    }
+
+    function updateSortButtons() {
+      elements.sortButtons.forEach((button) => {
+        button.setAttribute("aria-pressed", String(button.dataset.sort === state.sortMode));
+      });
+    }
+
+    elements.sortButtons.forEach((button) => {
+      button.addEventListener("click", () => {
+        state.sortMode = button.dataset.sort;
+        updateSortButtons();
+        render();
+      });
+    });
+
+    elements.adminToggle.addEventListener("click", () => {
+      const expanded = elements.adminToggle.getAttribute("aria-expanded") === "true";
+      elements.adminToggle.setAttribute("aria-expanded", String(!expanded));
+      elements.adminPanel.hidden = expanded;
+    });
+
+    elements.loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const email = elements.loginEmail.value.trim().toLowerCase();
+
+      if (email !== ADMIN_EMAIL) {
+        setMessage("That email is not configured for admin access.", "error");
+        return;
+      }
+
+      const redirectTo = `${window.location.origin}${window.location.pathname}`;
+      const { error } = await db.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: redirectTo,
+        },
+      });
+
+      if (error) {
+        setMessage(error.message, "error");
+        return;
+      }
+
+      setMessage("Check your email for the admin link.", "ok");
+    });
+
+    elements.signOutButton.addEventListener("click", async () => {
+      await db.auth.signOut();
+      state.session = null;
+      updateAuthViews();
+      await loadData();
+    });
+
+    elements.newPoemForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      await addPoem(event.currentTarget);
+    });
+
+    elements.poemList.addEventListener("click", async (event) => {
+      const actionTarget = event.target.closest("[data-action]");
+      if (!actionTarget) return;
+
+      const poemElement = event.target.closest("[data-poem-id]");
+      const poemId = poemElement?.dataset.poemId;
+      const action = actionTarget.dataset.action;
+
+      if (action === "like" && poemId) {
+        await likePoem(poemId);
+      }
+
+      if (action === "comments" && poemId) {
+        if (state.openComments.has(poemId)) {
+          state.openComments.delete(poemId);
+        } else {
+          state.openComments.add(poemId);
+        }
+        render();
+      }
+
+      if (action === "edit" && poemId) {
+        if (state.editingPoems.has(poemId)) {
+          state.editingPoems.delete(poemId);
+        } else {
+          state.editingPoems.add(poemId);
+        }
+        render();
+      }
+
+      if (action === "delete-poem" && poemId) {
+        await deletePoem(poemId);
+      }
+
+      if (action === "delete-comment") {
+        const commentId = event.target.closest("[data-comment-id]")?.dataset.commentId;
+        if (commentId) await deleteComment(commentId);
+      }
+    });
+
+    elements.poemList.addEventListener("submit", async (event) => {
+      const poemElement = event.target.closest("[data-poem-id]");
+      const poemId = poemElement?.dataset.poemId;
+
+      if (!poemId) return;
+
+      if (event.target.matches("[data-action='comment']")) {
+        event.preventDefault();
+        await addComment(poemId, event.target);
+      }
+
+      if (event.target.matches("[data-action='save-edit']")) {
+        event.preventDefault();
+        await savePoem(poemId, event.target);
+      }
+    });
+
+    async function init() {
+      if (!window.supabase) {
+        setMessage("Could not load Supabase.", "error");
+        return;
+      }
+
+      db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+        auth: {
+          persistSession: true,
+          autoRefreshToken: true,
+          detectSessionInUrl: true,
+        },
+      });
+
+      const { data } = await db.auth.getSession();
+      state.session = data.session;
+      updateAuthViews();
+
+      db.auth.onAuthStateChange(async (_event, session) => {
+        state.session = session;
+        updateAuthViews();
+        await loadData();
+      });
+
+      await loadData();
+    }
+
+    init();
+  </script>
 </body>
 </html>
