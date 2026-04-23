@@ -92,7 +92,7 @@
 
     .masthead-inner {
       display: grid;
-      grid-template-columns: minmax(0, 1fr) auto auto;
+      grid-template-columns: minmax(0, 1fr) auto;
       align-items: center;
       gap: 14px;
       padding: 16px 0;
@@ -129,7 +129,6 @@
     }
 
     .sort-tabs button,
-    .admin-toggle,
     .ghost-button,
     .danger-button,
     .primary-button {
@@ -151,7 +150,6 @@
       color: #171312;
     }
 
-    .admin-toggle,
     .ghost-button {
       display: inline-flex;
       align-items: center;
@@ -162,7 +160,6 @@
       text-decoration: none;
     }
 
-    .admin-toggle[aria-expanded="true"],
     .ghost-button:hover {
       border-color: var(--line-strong);
       color: var(--ink);
@@ -183,41 +180,7 @@
 
     .page {
       position: relative;
-      padding: 58px 0 86px;
-    }
-
-    .intro {
-      display: grid;
-      gap: 24px;
-      max-width: 860px;
-      padding-bottom: 40px;
-    }
-
-    .kicker {
-      margin: 0;
-      color: var(--teal);
-      font-size: 0.82rem;
-      font-weight: 800;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-    }
-
-    .intro h1 {
-      margin: 0;
-      font-family: var(--serif);
-      font-size: clamp(3rem, 10vw, 8.6rem);
-      font-weight: 400;
-      line-height: 0.9;
-      letter-spacing: 0;
-    }
-
-    .intro p:last-child {
-      max-width: 600px;
-      margin: 0;
-      color: var(--muted);
-      font-family: var(--serif);
-      font-size: clamp(1.18rem, 2vw, 1.48rem);
-      line-height: 1.55;
+      padding: 34px 0 86px;
     }
 
     .status-bar {
@@ -342,12 +305,14 @@
 
     .workbench {
       border-top: 1px solid var(--line);
-      padding-top: 32px;
+      padding-top: 24px;
     }
 
     .poem-list {
       display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
       gap: 24px;
+      align-items: start;
     }
 
     .poem {
@@ -370,8 +335,8 @@
 
     .poem-inner {
       display: grid;
-      gap: 20px;
-      padding: clamp(24px, 4vw, 42px);
+      gap: 18px;
+      padding: clamp(22px, 3vw, 32px);
     }
 
     .poem-meta {
@@ -397,7 +362,7 @@
     .poem h2 {
       margin: 0;
       font-family: var(--serif);
-      font-size: clamp(2.25rem, 5vw, 4.2rem);
+      font-size: clamp(1.9rem, 3vw, 2.8rem);
       font-weight: 400;
       line-height: 0.95;
       letter-spacing: 0;
@@ -407,7 +372,7 @@
       margin: 0;
       white-space: pre-line;
       font-family: var(--serif);
-      font-size: clamp(1.38rem, 2.8vw, 2.15rem);
+      font-size: clamp(1.15rem, 1.7vw, 1.45rem);
       line-height: 1.45;
     }
 
@@ -472,7 +437,7 @@
       gap: 16px;
       border-top: 1px solid var(--line);
       background: rgba(11, 10, 10, 0.22);
-      padding: 20px clamp(24px, 4vw, 42px) 26px;
+      padding: 20px clamp(22px, 3vw, 32px) 26px;
     }
 
     .comment-list {
@@ -560,11 +525,12 @@
       .sort-tabs button {
         flex: 1;
       }
+    }
 
-      .admin-toggle {
-        width: 100%;
+    @media (max-width: 760px) {
+      .poem-list {
+        grid-template-columns: 1fr;
       }
-
     }
 
     @media (max-width: 640px) {
@@ -583,7 +549,7 @@
       }
 
       .page {
-        padding-top: 36px;
+        padding-top: 26px;
       }
 
       .form-row,
@@ -615,17 +581,10 @@
         <button type="button" data-sort="newest" aria-pressed="false">Newest</button>
         <button type="button" data-sort="original" aria-pressed="false">Original</button>
       </nav>
-      <a class="admin-toggle" href="/admin/">Admin</a>
     </div>
   </header>
 
   <main class="page" id="top">
-    <section class="intro" aria-labelledby="page-title">
-      <p class="kicker">Short poems</p>
-      <h1 id="page-title">Truth first. Rhyme if it survives.</h1>
-      <p>A small room for sharp poems, strange jokes, heavy feelings, and the occasional grocery bag.</p>
-    </section>
-
     <div class="status-bar" id="statusBar">
       <span class="pill" id="poemCount">0 poems</span>
       <span class="pill" id="likeCount">0 likes</span>
