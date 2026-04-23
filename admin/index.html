@@ -48,6 +48,13 @@
       cursor: pointer;
     }
 
+    button:disabled,
+    input:disabled,
+    textarea:disabled {
+      cursor: wait;
+      opacity: 0.62;
+    }
+
     [hidden] {
       display: none !important;
     }
@@ -435,6 +442,21 @@
       elements.adminPanel.hidden = false;
     }
 
+    function setLoginBusy(isBusy) {
+      const button = elements.loginForm.querySelector("button[type='submit']");
+      elements.loginForm.elements.password.disabled = isBusy;
+      button.disabled = isBusy;
+      button.textContent = isBusy ? "Signing In" : "Sign In";
+    }
+
+    function getLoginSession(data) {
+      const session = Array.isArray(data) ? data[0] : data;
+      if (!session?.token) {
+        throw new Error("Admin login did not return a session token.");
+      }
+      return session;
+    }
+
     function getComments(poemId) {
       return state.comments.get(poemId) || [];
     }
@@ -540,22 +562,31 @@
 
     elements.loginForm.addEventListener("submit", async (event) => {
       event.preventDefault();
+      const form = event.currentTarget;
       const password = String(new FormData(event.currentTarget).get("password") || "");
 
-      const { data, error } = await db.rpc("brajesh_admin_login", {
-        admin_password: password,
-      });
+      setLoginBusy(true);
+      setStatus("Signing in.");
 
-      if (error) {
-        setStatus(error.message, "error");
-        return;
+      try {
+        const { data, error } = await db.rpc("brajesh_admin_login", {
+          admin_password: password,
+        });
+
+        if (error) throw error;
+
+        const session = getLoginSession(data);
+        state.token = session.token;
+        localStorage.setItem(TOKEN_STORAGE, state.token);
+        form.reset();
+        setStatus("Opening admin.");
+        window.location.reload();
+      } catch (error) {
+        localStorage.removeItem(TOKEN_STORAGE);
+        state.token = "";
+        setStatus(error.message || "Could not sign in.", "error");
+        setLoginBusy(false);
       }
-
-      const session = Array.isArray(data) ? data[0] : data;
-      state.token = session.token;
-      localStorage.setItem(TOKEN_STORAGE, state.token);
-      event.currentTarget.reset();
-      await loadAdminData();
     });
 
     elements.logoutButton.addEventListener("click", async () => {
