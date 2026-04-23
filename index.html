@@ -267,8 +267,7 @@
       margin-bottom: 16px;
     }
 
-    .panel-head h2,
-    .index-panel h2 {
+    .panel-head h2 {
       margin: 0;
       font-family: var(--serif);
       font-size: 1.75rem;
@@ -338,57 +337,8 @@
     }
 
     .workbench {
-      display: grid;
-      grid-template-columns: 250px minmax(0, 1fr);
-      gap: clamp(26px, 5vw, 56px);
-      align-items: start;
       border-top: 1px solid var(--line);
       padding-top: 32px;
-    }
-
-    .index-panel {
-      position: sticky;
-      top: 94px;
-      display: grid;
-      gap: 16px;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: rgba(33, 29, 26, 0.72);
-      padding: 18px;
-    }
-
-    .index-list {
-      display: grid;
-      gap: 6px;
-      margin: 0;
-      padding: 0;
-      list-style: none;
-    }
-
-    .index-list a {
-      display: flex;
-      align-items: baseline;
-      justify-content: space-between;
-      gap: 12px;
-      min-height: 32px;
-      color: var(--muted);
-      text-decoration: none;
-    }
-
-    .index-list a:hover {
-      color: var(--ink);
-    }
-
-    .index-list strong {
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      font-weight: 600;
-    }
-
-    .index-list span {
-      color: var(--faint);
-      font-size: 0.82rem;
     }
 
     .poem-list {
@@ -489,6 +439,12 @@
 
     .action-button.like-button {
       color: #ffc2c9;
+    }
+
+    .action-button.like-button[data-liked="true"] {
+      border-color: rgba(189, 101, 112, 0.46);
+      background: var(--red-soft);
+      color: #ffd5d9;
     }
 
     .action-button:disabled {
@@ -605,13 +561,6 @@
         width: 100%;
       }
 
-      .workbench {
-        grid-template-columns: 1fr;
-      }
-
-      .index-panel {
-        position: static;
-      }
     }
 
     @media (max-width: 640px) {
@@ -726,11 +675,6 @@
     </section>
 
     <section class="workbench" aria-label="Poems">
-      <aside class="index-panel" aria-labelledby="index-title">
-        <h2 id="index-title">Index</h2>
-        <ol class="index-list" id="indexList"></ol>
-      </aside>
-
       <section class="poem-list" id="poemList" aria-live="polite">
         <div class="empty-state">Loading poems.</div>
       </section>
@@ -769,7 +713,6 @@
       newPoemForm: document.querySelector("#newPoemForm"),
       signOutButton: document.querySelector("#signOutButton"),
       poemList: document.querySelector("#poemList"),
-      indexList: document.querySelector("#indexList"),
       poemCount: document.querySelector("#poemCount"),
       likeCount: document.querySelector("#likeCount"),
       commentCount: document.querySelector("#commentCount"),
@@ -868,9 +811,7 @@
         db.from("brajesh_comments")
           .select("id, poem_id, author_name, body, approved, created_at")
           .order("created_at", { ascending: true }),
-        db.from("brajesh_poem_likes")
-          .select("poem_id")
-          .eq("liker_key", state.clientKey),
+        db.rpc("brajesh_liked_poems", { target_liker_key: state.clientKey }),
       ]);
 
       document.body.classList.remove("loading");
@@ -906,18 +847,6 @@
       elements.likeCount.textContent = `${totalLikes} ${totalLikes === 1 ? "like" : "likes"}`;
       elements.commentCount.textContent = `${totalComments} ${totalComments === 1 ? "comment" : "comments"}`;
 
-      elements.indexList.innerHTML = poems.map((poem) => {
-        const stats = getStats(poem.id);
-        return `
-          <li>
-            <a href="#${escapeHtml(poem.slug)}">
-              <strong>${escapeHtml(poem.title)}</strong>
-              <span>${stats.likes_count}</span>
-            </a>
-          </li>
-        `;
-      }).join("");
-
       elements.poemList.innerHTML = poems.length
         ? poems.map((poem, index) => renderPoem(poem, index)).join("")
         : '<div class="empty-state">No poems here yet.</div>';
@@ -940,9 +869,9 @@
             <h2>${escapeHtml(poem.title)}</h2>
             <p class="poem-text">${renderBody(poem.body)}</p>
             <div class="poem-actions">
-              <button class="action-button like-button" type="button" data-action="like" ${liked ? "disabled" : ""}>
+              <button class="action-button like-button" type="button" data-action="like" data-liked="${liked ? "true" : "false"}">
                 <span aria-hidden="true">&hearts;</span>
-                <span>${liked ? "Liked" : "Like"}</span>
+                <span>${liked ? "Unlike" : "Like"}</span>
                 <span>${stats.likes_count}</span>
               </button>
               <button class="action-button" type="button" data-action="comments">
@@ -1024,20 +953,30 @@
       return state.poems.find((poem) => poem.id === id);
     }
 
-    async function likePoem(poemId) {
-      if (state.likedPoems.has(poemId)) return;
+    async function toggleLikePoem(poemId) {
+      const liked = state.likedPoems.has(poemId);
 
-      const { error } = await db.from("brajesh_poem_likes").insert({
-        poem_id: poemId,
-        liker_key: state.clientKey,
-      });
+      const { error } = liked
+        ? await db.rpc("brajesh_unlike_poem", {
+            target_poem_id: poemId,
+            target_liker_key: state.clientKey,
+          })
+        : await db.from("brajesh_poem_likes").insert({
+            poem_id: poemId,
+            liker_key: state.clientKey,
+          });
 
       if (error && error.code !== "23505") {
         setMessage(error.message, "error");
         return;
       }
 
-      state.likedPoems.add(poemId);
+      if (liked) {
+        state.likedPoems.delete(poemId);
+      } else {
+        state.likedPoems.add(poemId);
+      }
+
       await loadData();
     }
 
@@ -1216,7 +1155,7 @@
       const action = actionTarget.dataset.action;
 
       if (action === "like" && poemId) {
-        await likePoem(poemId);
+        await toggleLikePoem(poemId);
       }
 
       if (action === "comments" && poemId) {
