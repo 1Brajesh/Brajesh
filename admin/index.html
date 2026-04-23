@@ -211,6 +211,13 @@
       justify-content: space-between;
     }
 
+    .management-actions {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      justify-content: flex-end;
+    }
+
     .primary-button,
     .ghost-button,
     .danger-button {
@@ -329,6 +336,10 @@
       .primary-button,
       .ghost-button,
       .danger-button {
+        width: 100%;
+      }
+
+      .management-actions {
         width: 100%;
       }
     }
@@ -506,12 +517,14 @@
 
     function render() {
       elements.poemList.innerHTML = state.poems.length
-        ? state.poems.map(renderPoem).join("")
+        ? state.poems.map((poem, index) => renderPoem(poem, index)).join("")
         : '<div class="empty">No poems yet.</div>';
     }
 
-    function renderPoem(poem) {
+    function renderPoem(poem, index) {
       const comments = getComments(poem.id);
+      const isFirst = index === 0;
+      const isLast = index === state.poems.length - 1;
 
       return `
         <article class="poem" data-poem-id="${poem.id}">
@@ -541,7 +554,9 @@
                 <input name="published" type="checkbox" ${poem.published ? "checked" : ""}>
                 Published
               </label>
-              <span>
+              <span class="management-actions">
+                <button class="ghost-button" type="button" data-action="move-up" ${isFirst ? "disabled" : ""}>Move Up</button>
+                <button class="ghost-button" type="button" data-action="move-down" ${isLast ? "disabled" : ""}>Move Down</button>
                 <button class="primary-button" type="submit">Save</button>
                 <button class="danger-button" type="button" data-action="delete-poem">Delete</button>
               </span>
@@ -659,6 +674,25 @@
       if (!target) return;
 
       const action = target.dataset.action;
+
+      if (action === "move-up" || action === "move-down") {
+        const poemId = event.target.closest("[data-poem-id]")?.dataset.poemId;
+        const moveDirection = action === "move-up" ? "up" : "down";
+
+        const { data, error } = await db.rpc("brajesh_admin_move_poem", {
+          admin_token: state.token,
+          target_poem_id: poemId,
+          move_direction: moveDirection,
+        });
+
+        if (error) {
+          setStatus(error.message, "error");
+          return;
+        }
+
+        await loadAdminData();
+        setStatus(data ? "Poem moved." : "Poem is already at the edge.", data ? "ok" : "");
+      }
 
       if (action === "delete-poem") {
         const poemElement = event.target.closest("[data-poem-id]");
