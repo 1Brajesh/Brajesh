@@ -796,11 +796,13 @@
       });
     }
 
-    async function loadData() {
+    async function loadData(options = {}) {
       if (!db) return;
 
-      document.body.classList.add("loading");
-      setMessage("Loading.");
+      if (!options.silent) {
+        document.body.classList.add("loading");
+        setMessage("Loading.");
+      }
 
       const [poemsResult, statsResult, commentsResult, likesResult] = await Promise.all([
         db.from("brajesh_poems")
@@ -814,7 +816,9 @@
         db.rpc("brajesh_liked_poems", { target_liker_key: state.clientKey }),
       ]);
 
-      document.body.classList.remove("loading");
+      if (!options.silent) {
+        document.body.classList.remove("loading");
+      }
 
       const error = poemsResult.error || statsResult.error || commentsResult.error || likesResult.error;
       if (error) {
@@ -835,7 +839,9 @@
       }
 
       render();
-      setMessage("");
+      if (!options.silent) {
+        setMessage("");
+      }
     }
 
     function render() {
@@ -953,8 +959,27 @@
       return state.poems.find((poem) => poem.id === id);
     }
 
+    function updateLikeState(poemId, liked) {
+      const currentStats = getStats(poemId);
+      const nextCount = Math.max(0, currentStats.likes_count + (liked ? 1 : -1));
+
+      state.stats.set(poemId, {
+        ...currentStats,
+        poem_id: poemId,
+        likes_count: nextCount,
+      });
+
+      if (liked) {
+        state.likedPoems.add(poemId);
+      } else {
+        state.likedPoems.delete(poemId);
+      }
+    }
+
     async function toggleLikePoem(poemId) {
       const liked = state.likedPoems.has(poemId);
+      updateLikeState(poemId, !liked);
+      render();
 
       const { error } = liked
         ? await db.rpc("brajesh_unlike_poem", {
@@ -967,17 +992,13 @@
           });
 
       if (error && error.code !== "23505") {
+        updateLikeState(poemId, liked);
+        render();
         setMessage(error.message, "error");
         return;
       }
 
-      if (liked) {
-        state.likedPoems.delete(poemId);
-      } else {
-        state.likedPoems.add(poemId);
-      }
-
-      await loadData();
+      await loadData({ silent: true });
     }
 
     async function addComment(poemId, form) {
