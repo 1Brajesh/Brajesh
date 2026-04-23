@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Brajesh Admin</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --page: #11100f;
+      --panel: #211d1a;
+      --panel-soft: #2a2420;
+      --ink: #f5efe7;
+      --muted: #b7aa9c;
+      --faint: #82776d;
+      --line: #3d352f;
+      --line-strong: #594d44;
+      --red: #bd6570;
+      --red-soft: rgba(189, 101, 112, 0.16);
+      --teal: #86c7c3;
+      --gold: #d6b56f;
+      --serif: Georgia, "Times New Roman", serif;
+      --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        linear-gradient(90deg, rgba(134, 199, 195, 0.06), transparent 22%, transparent 78%, rgba(189, 101, 112, 0.06)),
+        linear-gradient(180deg, #191514 0%, #11100f 48%, #0c0b0a 100%);
+      color: var(--ink);
+      font-family: var(--sans);
+      line-height: 1.5;
+    }
+
+    button,
+    input,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .shell {
+      width: min(980px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 34px 0 72px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      margin-bottom: 38px;
+    }
+
+    .brand {
+      color: var(--ink);
+      text-decoration: none;
+    }
+
+    .brand strong {
+      display: block;
+      font-family: var(--serif);
+      font-size: clamp(2.2rem, 7vw, 5.5rem);
+      font-weight: 400;
+      line-height: 0.9;
+    }
+
+    .brand span {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .panel {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(33, 29, 26, 0.82);
+      box-shadow: 0 26px 80px rgba(0, 0, 0, 0.28);
+      padding: clamp(18px, 3vw, 28px);
+    }
+
+    .panel + .panel {
+      margin-top: 22px;
+    }
+
+    .panel-head {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      margin-bottom: 16px;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      font-family: var(--serif);
+      font-weight: 400;
+      line-height: 1;
+      letter-spacing: 0;
+    }
+
+    h1 {
+      font-size: clamp(2rem, 5vw, 3.8rem);
+    }
+
+    h2 {
+      font-size: 2rem;
+    }
+
+    h3 {
+      font-size: clamp(1.8rem, 4vw, 3.2rem);
+    }
+
+    .status {
+      min-height: 24px;
+      color: var(--muted);
+      margin: 0 0 16px;
+    }
+
+    .status[data-tone="error"] {
+      color: #ffb8bf;
+    }
+
+    .status[data-tone="ok"] {
+      color: var(--teal);
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    .form-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(160px, 0.35fr);
+      gap: 10px;
+    }
+
+    label {
+      display: grid;
+      gap: 7px;
+      color: var(--muted);
+      font-size: 0.84rem;
+      font-weight: 700;
+    }
+
+    input,
+    textarea {
+      width: 100%;
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: rgba(9, 8, 8, 0.46);
+      color: var(--ink);
+      padding: 11px 12px;
+      outline: none;
+    }
+
+    textarea {
+      min-height: 154px;
+      resize: vertical;
+      font-family: var(--serif);
+      font-size: 1.1rem;
+      line-height: 1.45;
+    }
+
+    input:focus,
+    textarea:focus {
+      border-color: var(--teal);
+      box-shadow: 0 0 0 3px rgba(134, 199, 195, 0.12);
+    }
+
+    .checkbox-row {
+      display: inline-flex;
+      align-items: center;
+      gap: 9px;
+    }
+
+    .checkbox-row input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--teal);
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 9px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .primary-button,
+    .ghost-button,
+    .danger-button {
+      min-height: 40px;
+      border-radius: 8px;
+      border: 1px solid transparent;
+      padding: 0 13px;
+      font-weight: 700;
+    }
+
+    .primary-button {
+      background: var(--teal);
+      color: #0c1515;
+    }
+
+    .ghost-button {
+      border-color: var(--line);
+      background: rgba(245, 239, 231, 0.04);
+      color: var(--muted);
+    }
+
+    .danger-button {
+      border-color: rgba(189, 101, 112, 0.42);
+      background: rgba(189, 101, 112, 0.1);
+      color: #ffd5d9;
+    }
+
+    .poem-list {
+      display: grid;
+      gap: 22px;
+      margin-top: 22px;
+    }
+
+    .poem {
+      border: 1px solid var(--line);
+      border-radius: 8px;
+      background: linear-gradient(180deg, rgba(42, 36, 32, 0.9), rgba(27, 23, 21, 0.92));
+      overflow: hidden;
+    }
+
+    .poem-body {
+      display: grid;
+      gap: 16px;
+      padding: clamp(20px, 3vw, 28px);
+    }
+
+    .poem-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      color: var(--faint);
+      font-size: 0.84rem;
+    }
+
+    .tag {
+      border: 1px solid rgba(214, 181, 111, 0.35);
+      border-radius: 999px;
+      color: var(--gold);
+      padding: 2px 7px;
+    }
+
+    .comment-list {
+      display: grid;
+      gap: 10px;
+      border-top: 1px solid var(--line);
+      background: rgba(11, 10, 10, 0.22);
+      padding: 18px clamp(20px, 3vw, 28px) 22px;
+    }
+
+    .comment {
+      display: grid;
+      gap: 5px;
+      border-left: 3px solid var(--teal);
+      padding-left: 12px;
+    }
+
+    .comment-head {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .comment p {
+      margin: 0;
+      color: var(--muted);
+    }
+
+    .empty {
+      border: 1px dashed var(--line);
+      border-radius: 8px;
+      color: var(--muted);
+      padding: 26px;
+      text-align: center;
+    }
+
+    @media (max-width: 720px) {
+      .topbar,
+      .panel-head {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .form-row {
+        grid-template-columns: 1fr;
+      }
+
+      .primary-button,
+      .ghost-button,
+      .danger-button {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="shell">
+    <header class="topbar">
+      <a class="brand" href="/">
+        <strong>Brajesh</strong>
+        <span>Admin</span>
+      </a>
+      <a class="ghost-button" href="/">View Site</a>
+    </header>
+
+    <p class="status" id="status" role="status"></p>
+
+    <section class="panel" id="loginPanel">
+      <div class="panel-head">
+        <h1>Admin Login</h1>
+      </div>
+      <form class="form-grid" id="loginForm">
+        <label>
+          Password
+          <input name="password" type="password" autocomplete="current-password" required>
+        </label>
+        <div class="button-row">
+          <button class="primary-button" type="submit">Sign In</button>
+        </div>
+      </form>
+    </section>
+
+    <section id="adminPanel" hidden>
+      <section class="panel">
+        <div class="panel-head">
+          <h1>Manage Poems</h1>
+          <button class="ghost-button" id="logoutButton" type="button">Sign Out</button>
+        </div>
+        <form class="form-grid" id="newPoemForm">
+          <div class="form-row">
+            <label>
+              Title
+              <input name="title" autocomplete="off" required>
+            </label>
+            <label>
+              Slug
+              <input name="slug" autocomplete="off" placeholder="auto">
+            </label>
+          </div>
+          <label>
+            Poem
+            <textarea name="body" required></textarea>
+          </label>
+          <div class="button-row">
+            <label class="checkbox-row">
+              <input name="published" type="checkbox" checked>
+              Published
+            </label>
+            <button class="primary-button" type="submit">Add Poem</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="poem-list" id="poemList" aria-live="polite"></section>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const SUPABASE_URL = "https://pjbpghknzqmwfykbtvzp.supabase.co";
+    const SUPABASE_KEY = "sb_publishable_c-jEz8WNtOn5etyRxCrKNw_WIU-GBPE";
+    const TOKEN_STORAGE = "brajesh_admin_token";
+
+    const state = {
+      token: localStorage.getItem(TOKEN_STORAGE) || "",
+      poems: [],
+      comments: new Map(),
+    };
+
+    const elements = {
+      status: document.querySelector("#status"),
+      loginPanel: document.querySelector("#loginPanel"),
+      adminPanel: document.querySelector("#adminPanel"),
+      loginForm: document.querySelector("#loginForm"),
+      logoutButton: document.querySelector("#logoutButton"),
+      newPoemForm: document.querySelector("#newPoemForm"),
+      poemList: document.querySelector("#poemList"),
+    };
+
+    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    });
+
+    function setStatus(text, tone = "") {
+      elements.status.textContent = text;
+      elements.status.dataset.tone = tone;
+    }
+
+    function escapeHtml(value) {
+      return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;");
+    }
+
+    function showLogin() {
+      elements.loginPanel.hidden = false;
+      elements.adminPanel.hidden = true;
+    }
+
+    function showAdmin() {
+      elements.loginPanel.hidden = true;
+      elements.adminPanel.hidden = false;
+    }
+
+    function getComments(poemId) {
+      return state.comments.get(poemId) || [];
+    }
+
+    async function loadAdminData() {
+      if (!state.token) {
+        showLogin();
+        return;
+      }
+
+      setStatus("Loading.");
+
+      const [poemsResult, commentsResult] = await Promise.all([
+        db.rpc("brajesh_admin_poems", { admin_token: state.token }),
+        db.rpc("brajesh_admin_comments", { admin_token: state.token }),
+      ]);
+
+      const error = poemsResult.error || commentsResult.error;
+      if (error) {
+        localStorage.removeItem(TOKEN_STORAGE);
+        state.token = "";
+        showLogin();
+        setStatus(error.message, "error");
+        return;
+      }
+
+      state.poems = poemsResult.data || [];
+      state.comments = new Map();
+
+      for (const comment of commentsResult.data || []) {
+        if (!state.comments.has(comment.poem_id)) {
+          state.comments.set(comment.poem_id, []);
+        }
+        state.comments.get(comment.poem_id).push(comment);
+      }
+
+      showAdmin();
+      render();
+      setStatus("");
+    }
+
+    function render() {
+      elements.poemList.innerHTML = state.poems.length
+        ? state.poems.map(renderPoem).join("")
+        : '<div class="empty">No poems yet.</div>';
+    }
+
+    function renderPoem(poem) {
+      const comments = getComments(poem.id);
+
+      return `
+        <article class="poem" data-poem-id="${poem.id}">
+          <form class="poem-body form-grid" data-action="save-poem">
+            <div class="poem-meta">
+              <span>${poem.likes_count} likes</span>
+              <span>${poem.comments_count} comments</span>
+              ${poem.published ? "" : '<span class="tag">Hidden</span>'}
+            </div>
+            <h3>${escapeHtml(poem.title)}</h3>
+            <div class="form-row">
+              <label>
+                Title
+                <input name="title" value="${escapeHtml(poem.title)}" required>
+              </label>
+              <label>
+                Slug
+                <input name="slug" value="${escapeHtml(poem.slug)}" required>
+              </label>
+            </div>
+            <label>
+              Poem
+              <textarea name="body" required>${escapeHtml(poem.body)}</textarea>
+            </label>
+            <div class="button-row">
+              <label class="checkbox-row">
+                <input name="published" type="checkbox" ${poem.published ? "checked" : ""}>
+                Published
+              </label>
+              <span>
+                <button class="primary-button" type="submit">Save</button>
+                <button class="danger-button" type="button" data-action="delete-poem">Delete</button>
+              </span>
+            </div>
+          </form>
+          <section class="comment-list">
+            ${comments.length ? comments.map(renderComment).join("") : '<div class="empty">No comments.</div>'}
+          </section>
+        </article>
+      `;
+    }
+
+    function renderComment(comment) {
+      return `
+        <div class="comment" data-comment-id="${comment.id}">
+          <div class="comment-head">
+            <strong>${escapeHtml(comment.author_name)}</strong>
+            <button class="danger-button" type="button" data-action="delete-comment">Delete</button>
+          </div>
+          <p>${escapeHtml(comment.body)}</p>
+        </div>
+      `;
+    }
+
+    elements.loginForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const password = String(new FormData(event.currentTarget).get("password") || "");
+
+      const { data, error } = await db.rpc("brajesh_admin_login", {
+        admin_password: password,
+      });
+
+      if (error) {
+        setStatus(error.message, "error");
+        return;
+      }
+
+      const session = Array.isArray(data) ? data[0] : data;
+      state.token = session.token;
+      localStorage.setItem(TOKEN_STORAGE, state.token);
+      event.currentTarget.reset();
+      await loadAdminData();
+    });
+
+    elements.logoutButton.addEventListener("click", async () => {
+      if (state.token) {
+        await db.rpc("brajesh_admin_logout", { admin_token: state.token });
+      }
+      localStorage.removeItem(TOKEN_STORAGE);
+      state.token = "";
+      state.poems = [];
+      state.comments = new Map();
+      showLogin();
+      setStatus("Signed out.", "ok");
+    });
+
+    elements.newPoemForm.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      const data = new FormData(event.currentTarget);
+      const { error } = await db.rpc("brajesh_admin_create_poem", {
+        admin_token: state.token,
+        poem_title: String(data.get("title") || "").trim(),
+        poem_slug: String(data.get("slug") || "").trim(),
+        poem_body: String(data.get("body") || "").trim(),
+        poem_published: data.get("published") === "on",
+      });
+
+      if (error) {
+        setStatus(error.message, "error");
+        return;
+      }
+
+      event.currentTarget.reset();
+      event.currentTarget.elements.published.checked = true;
+      await loadAdminData();
+      setStatus("Poem added.", "ok");
+    });
+
+    elements.poemList.addEventListener("submit", async (event) => {
+      if (!event.target.matches("[data-action='save-poem']")) return;
+      event.preventDefault();
+
+      const poemId = event.target.closest("[data-poem-id]")?.dataset.poemId;
+      const data = new FormData(event.target);
+
+      const { error } = await db.rpc("brajesh_admin_update_poem", {
+        admin_token: state.token,
+        target_poem_id: poemId,
+        poem_title: String(data.get("title") || "").trim(),
+        poem_slug: String(data.get("slug") || "").trim(),
+        poem_body: String(data.get("body") || "").trim(),
+        poem_published: data.get("published") === "on",
+      });
+
+      if (error) {
+        setStatus(error.message, "error");
+        return;
+      }
+
+      await loadAdminData();
+      setStatus("Poem saved.", "ok");
+    });
+
+    elements.poemList.addEventListener("click", async (event) => {
+      const target = event.target.closest("[data-action]");
+      if (!target) return;
+
+      const action = target.dataset.action;
+
+      if (action === "delete-poem") {
+        const poemElement = event.target.closest("[data-poem-id]");
+        const poemId = poemElement?.dataset.poemId;
+        const title = poemElement?.querySelector("h3")?.textContent || "this poem";
+        if (!window.confirm(`Delete "${title}"?`)) return;
+
+        const { error } = await db.rpc("brajesh_admin_delete_poem", {
+          admin_token: state.token,
+          target_poem_id: poemId,
+        });
+
+        if (error) {
+          setStatus(error.message, "error");
+          return;
+        }
+
+        await loadAdminData();
+        setStatus("Poem deleted.", "ok");
+      }
+
+      if (action === "delete-comment") {
+        const commentId = event.target.closest("[data-comment-id]")?.dataset.commentId;
+        if (!commentId || !window.confirm("Delete this comment?")) return;
+
+        const { error } = await db.rpc("brajesh_admin_delete_comment", {
+          admin_token: state.token,
+          target_comment_id: commentId,
+        });
+
+        if (error) {
+          setStatus(error.message, "error");
+          return;
+        }
+
+        await loadAdminData();
+        setStatus("Comment deleted.", "ok");
+      }
+    });
+
+    loadAdminData();
+  </script>
+</body>
+</html>

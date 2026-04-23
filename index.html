@@ -153,9 +153,13 @@
 
     .admin-toggle,
     .ghost-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
       border-color: var(--line);
       background: rgba(245, 239, 231, 0.04);
       color: var(--muted);
+      text-decoration: none;
     }
 
     .admin-toggle[aria-expanded="true"],
@@ -611,7 +615,7 @@
         <button type="button" data-sort="newest" aria-pressed="false">Newest</button>
         <button type="button" data-sort="original" aria-pressed="false">Original</button>
       </nav>
-      <button class="admin-toggle" id="adminToggle" type="button" aria-expanded="false" aria-controls="adminPanel">Admin</button>
+      <a class="admin-toggle" href="/admin/">Admin</a>
     </div>
   </header>
 
@@ -629,51 +633,6 @@
       <span class="site-message" id="siteMessage" role="status"></span>
     </div>
 
-    <section class="admin-panel" id="adminPanel" hidden>
-      <div id="loginView">
-        <div class="panel-head">
-          <h2>Admin</h2>
-        </div>
-        <form class="form-row" id="loginForm">
-          <label class="field">
-            <span>Email</span>
-            <input id="loginEmail" name="email" type="email" autocomplete="email" placeholder="email@example.com" required>
-          </label>
-          <button class="primary-button" type="submit">Send Link</button>
-        </form>
-      </div>
-
-      <div id="adminView" hidden>
-        <div class="panel-head">
-          <h2>Admin</h2>
-          <button class="ghost-button" id="signOutButton" type="button">Sign Out</button>
-        </div>
-        <form class="form-grid" id="newPoemForm">
-          <div class="form-row">
-            <label class="field">
-              <span>Title</span>
-              <input name="title" autocomplete="off" required>
-            </label>
-            <label class="field">
-              <span>Slug</span>
-              <input name="slug" autocomplete="off" placeholder="auto">
-            </label>
-          </div>
-          <label class="field">
-            <span>Poem</span>
-            <textarea name="body" required></textarea>
-          </label>
-          <div class="edit-actions">
-            <label class="check-field">
-              <input name="published" type="checkbox" checked>
-              <span>Published</span>
-            </label>
-            <button class="primary-button" type="submit">Add Poem</button>
-          </div>
-        </form>
-      </div>
-    </section>
-
     <section class="workbench" aria-label="Poems">
       <section class="poem-list" id="poemList" aria-live="polite">
         <div class="empty-state">Loading poems.</div>
@@ -685,8 +644,6 @@
   <script>
     const SUPABASE_URL = "https://pjbpghknzqmwfykbtvzp.supabase.co";
     const SUPABASE_KEY = "sb_publishable_c-jEz8WNtOn5etyRxCrKNw_WIU-GBPE";
-    const ADMIN_EMAIL = "engineerbk@gmail.com";
-    const AUTH_REDIRECT_URL = "https://brajesh.com/";
     const CLIENT_KEY_STORAGE = "brajesh_client_key";
     const COMMENT_NAME_STORAGE = "brajesh_comment_name";
 
@@ -696,22 +653,11 @@
       comments: new Map(),
       likedPoems: new Set(),
       openComments: new Set(),
-      editingPoems: new Set(),
       sortMode: "floated",
-      session: null,
-      isAdmin: false,
       clientKey: getClientKey(),
     };
 
     const elements = {
-      adminPanel: document.querySelector("#adminPanel"),
-      adminToggle: document.querySelector("#adminToggle"),
-      adminView: document.querySelector("#adminView"),
-      loginView: document.querySelector("#loginView"),
-      loginForm: document.querySelector("#loginForm"),
-      loginEmail: document.querySelector("#loginEmail"),
-      newPoemForm: document.querySelector("#newPoemForm"),
-      signOutButton: document.querySelector("#signOutButton"),
       poemList: document.querySelector("#poemList"),
       poemCount: document.querySelector("#poemCount"),
       likeCount: document.querySelector("#likeCount"),
@@ -749,25 +695,6 @@
 
     function renderBody(value) {
       return escapeHtml(value).replace(/\*([^*]+)\*/g, "<em>$1</em>");
-    }
-
-    function slugify(value) {
-      return String(value)
-        .toLowerCase()
-        .trim()
-        .replace(/[^a-z0-9]+/g, "-")
-        .replace(/^-+|-+$/g, "") || `poem-${Date.now().toString(36)}`;
-    }
-
-    function isAdminSession(session) {
-      return session?.user?.email?.toLowerCase() === ADMIN_EMAIL;
-    }
-
-    function updateAuthViews() {
-      state.isAdmin = isAdminSession(state.session);
-      elements.loginView.hidden = state.isAdmin;
-      elements.adminView.hidden = !state.isAdmin;
-      elements.adminToggle.textContent = state.isAdmin ? "Admin On" : "Admin";
     }
 
     function getStats(poemId) {
@@ -868,14 +795,12 @@
       const comments = getComments(poem.id);
       const liked = state.likedPoems.has(poem.id);
       const commentsOpen = state.openComments.has(poem.id);
-      const editing = state.editingPoems.has(poem.id);
 
       return `
         <article class="poem" id="${escapeHtml(poem.slug)}" data-poem-id="${poem.id}">
           <div class="poem-inner">
             <div class="poem-meta">
               <span>${String(index + 1).padStart(2, "0")}</span>
-              ${poem.published ? "" : '<span class="hidden-label">Hidden</span>'}
             </div>
             <h2>${escapeHtml(poem.title)}</h2>
             <p class="poem-text">${renderBody(poem.body)}</p>
@@ -891,15 +816,8 @@
               </button>
               <a class="anchor-link" href="#${escapeHtml(poem.slug)}">#${escapeHtml(poem.slug)}</a>
             </div>
-            ${state.isAdmin ? `
-              <div class="admin-actions">
-                <button class="ghost-button" type="button" data-action="edit">${editing ? "Close Edit" : "Edit"}</button>
-                <button class="danger-button" type="button" data-action="delete-poem">Delete</button>
-              </div>
-            ` : ""}
           </div>
           ${commentsOpen ? renderComments(poem, comments) : ""}
-          ${editing && state.isAdmin ? renderEditForm(poem) : ""}
         </article>
       `;
     }
@@ -925,43 +843,10 @@
         <div class="comment" data-comment-id="${comment.id}">
           <div class="comment-meta">
             <strong>${escapeHtml(comment.author_name)}</strong>
-            ${state.isAdmin ? '<button class="action-button" type="button" data-action="delete-comment">Delete</button>' : ""}
           </div>
           <p>${escapeHtml(comment.body)}</p>
         </div>
       `;
-    }
-
-    function renderEditForm(poem) {
-      return `
-        <form class="edit-form" data-action="save-edit">
-          <div class="form-row">
-            <label class="field">
-              <span>Title</span>
-              <input name="title" value="${escapeHtml(poem.title)}" required>
-            </label>
-            <label class="field">
-              <span>Slug</span>
-              <input name="slug" value="${escapeHtml(poem.slug)}" required>
-            </label>
-          </div>
-          <label class="field">
-            <span>Poem</span>
-            <textarea name="body" required>${escapeHtml(poem.body)}</textarea>
-          </label>
-          <div class="edit-actions">
-            <label class="check-field">
-              <input name="published" type="checkbox" ${poem.published ? "checked" : ""}>
-              <span>Published</span>
-            </label>
-            <button class="primary-button" type="submit">Save</button>
-          </div>
-        </form>
-      `;
-    }
-
-    function findPoem(id) {
-      return state.poems.find((poem) => poem.id === id);
     }
 
     function updateLikeState(poemId, liked) {
@@ -1032,90 +917,6 @@
       await loadData();
     }
 
-    async function addPoem(form) {
-      if (!state.isAdmin) return;
-
-      const data = new FormData(form);
-      const title = String(data.get("title") || "").trim();
-      const body = String(data.get("body") || "").trim();
-      const rawSlug = String(data.get("slug") || "").trim();
-      const published = data.get("published") === "on";
-
-      if (!title || !body) return;
-
-      const maxOrder = state.poems.reduce((max, poem) => Math.max(max, poem.display_order), 0);
-      const slug = slugify(rawSlug || title);
-
-      const { error } = await db.from("brajesh_poems").insert({
-        title,
-        slug,
-        body,
-        display_order: maxOrder + 10,
-        published,
-      });
-
-      if (error) {
-        setMessage(error.message, "error");
-        return;
-      }
-
-      form.reset();
-      form.elements.published.checked = true;
-      state.sortMode = "newest";
-      updateSortButtons();
-      await loadData();
-    }
-
-    async function savePoem(poemId, form) {
-      if (!state.isAdmin) return;
-
-      const data = new FormData(form);
-      const title = String(data.get("title") || "").trim();
-      const slug = slugify(String(data.get("slug") || title));
-      const body = String(data.get("body") || "").trim();
-      const published = data.get("published") === "on";
-
-      if (!title || !body) return;
-
-      const { error } = await db.from("brajesh_poems")
-        .update({ title, slug, body, published })
-        .eq("id", poemId);
-
-      if (error) {
-        setMessage(error.message, "error");
-        return;
-      }
-
-      state.editingPoems.delete(poemId);
-      await loadData();
-    }
-
-    async function deletePoem(poemId) {
-      if (!state.isAdmin) return;
-      const poem = findPoem(poemId);
-      if (!poem || !window.confirm(`Delete "${poem.title}"?`)) return;
-
-      const { error } = await db.from("brajesh_poems").delete().eq("id", poemId);
-      if (error) {
-        setMessage(error.message, "error");
-        return;
-      }
-
-      await loadData();
-    }
-
-    async function deleteComment(commentId) {
-      if (!state.isAdmin) return;
-
-      const { error } = await db.from("brajesh_comments").delete().eq("id", commentId);
-      if (error) {
-        setMessage(error.message, "error");
-        return;
-      }
-
-      await loadData();
-    }
-
     function updateSortButtons() {
       elements.sortButtons.forEach((button) => {
         button.setAttribute("aria-pressed", String(button.dataset.sort === state.sortMode));
@@ -1128,53 +929,6 @@
         updateSortButtons();
         render();
       });
-    });
-
-    elements.adminToggle.addEventListener("click", () => {
-      const expanded = elements.adminToggle.getAttribute("aria-expanded") === "true";
-      elements.adminToggle.setAttribute("aria-expanded", String(!expanded));
-      elements.adminPanel.hidden = expanded;
-    });
-
-    elements.loginForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      const email = elements.loginEmail.value.trim().toLowerCase();
-
-      if (email !== ADMIN_EMAIL) {
-        setMessage("That email is not configured for admin access.", "error");
-        return;
-      }
-
-      const { error } = await db.auth.signInWithOtp({
-        email,
-        options: {
-          emailRedirectTo: AUTH_REDIRECT_URL,
-        },
-      });
-
-      if (error) {
-        setMessage(error.message, "error");
-        return;
-      }
-
-      setMessage("Check your email for the admin link.", "ok");
-    });
-
-    elements.signOutButton.addEventListener("click", async () => {
-      const { error } = await db.auth.signOut();
-      if (error) {
-        setMessage(error.message, "error");
-        return;
-      }
-
-      state.session = null;
-      updateAuthViews();
-      render();
-    });
-
-    elements.newPoemForm.addEventListener("submit", async (event) => {
-      event.preventDefault();
-      await addPoem(event.currentTarget);
     });
 
     elements.poemList.addEventListener("click", async (event) => {
@@ -1198,23 +952,6 @@
         render();
       }
 
-      if (action === "edit" && poemId) {
-        if (state.editingPoems.has(poemId)) {
-          state.editingPoems.delete(poemId);
-        } else {
-          state.editingPoems.add(poemId);
-        }
-        render();
-      }
-
-      if (action === "delete-poem" && poemId) {
-        await deletePoem(poemId);
-      }
-
-      if (action === "delete-comment") {
-        const commentId = event.target.closest("[data-comment-id]")?.dataset.commentId;
-        if (commentId) await deleteComment(commentId);
-      }
     });
 
     elements.poemList.addEventListener("submit", async (event) => {
@@ -1228,16 +965,9 @@
         await addComment(poemId, event.target);
       }
 
-      if (event.target.matches("[data-action='save-edit']")) {
-        event.preventDefault();
-        await savePoem(poemId, event.target);
-      }
     });
 
     async function init() {
-      const hashParams = new URLSearchParams(window.location.hash.slice(1));
-      const authError = hashParams.get("error_description");
-
       if (!window.supabase) {
         setMessage("Could not load Supabase.", "error");
         return;
@@ -1251,21 +981,7 @@
         },
       });
 
-      const { data } = await db.auth.getSession();
-      state.session = data.session;
-      updateAuthViews();
-
-      db.auth.onAuthStateChange(async (_event, session) => {
-        state.session = session;
-        updateAuthViews();
-        await loadData();
-      });
-
       await loadData();
-
-      if (authError) {
-        setMessage(`${authError}. Request a new admin link.`, "error");
-      }
     }
 
     init();
