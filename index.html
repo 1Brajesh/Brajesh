@@ -742,6 +742,7 @@
     const SUPABASE_URL = "https://pjbpghknzqmwfykbtvzp.supabase.co";
     const SUPABASE_KEY = "sb_publishable_c-jEz8WNtOn5etyRxCrKNw_WIU-GBPE";
     const ADMIN_EMAIL = "engineerbk@gmail.com";
+    const AUTH_REDIRECT_URL = "https://brajesh.com/";
     const CLIENT_KEY_STORAGE = "brajesh_client_key";
     const COMMENT_NAME_STORAGE = "brajesh_comment_name";
 
@@ -1179,11 +1180,10 @@
         return;
       }
 
-      const redirectTo = `${window.location.origin}${window.location.pathname}`;
       const { error } = await db.auth.signInWithOtp({
         email,
         options: {
-          emailRedirectTo: redirectTo,
+          emailRedirectTo: AUTH_REDIRECT_URL,
         },
       });
 
@@ -1265,6 +1265,9 @@
     });
 
     async function init() {
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
+      const authError = hashParams.get("error_description");
+
       if (!window.supabase) {
         setMessage("Could not load Supabase.", "error");
         return;
@@ -1289,6 +1292,10 @@
       });
 
       await loadData();
+
+      if (authError) {
+        setMessage(`${authError}. Request a new admin link.`, "error");
+      }
     }
 
     init();
