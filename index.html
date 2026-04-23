@@ -7,21 +7,18 @@
   <style>
     :root {
       color-scheme: dark;
-      --page: #11100f;
-      --page-soft: #171413;
-      --panel: #211d1a;
-      --panel-soft: #2a2420;
-      --ink: #f5efe7;
-      --muted: #b7aa9c;
-      --faint: #82776d;
-      --line: #3d352f;
-      --line-strong: #594d44;
-      --red: #bd6570;
-      --red-soft: rgba(189, 101, 112, 0.16);
-      --teal: #86c7c3;
-      --teal-soft: rgba(134, 199, 195, 0.13);
-      --gold: #d6b56f;
-      --shadow: 0 26px 80px rgba(0, 0, 0, 0.32);
+      --ink: #2d1a10;
+      --ink-soft: #65472c;
+      --muted: #8a6640;
+      --faint: #a9845b;
+      --line: rgba(239, 226, 202, 0.16);
+      --line-strong: rgba(239, 226, 202, 0.28);
+      --red: #8e3940;
+      --red-soft: rgba(142, 57, 64, 0.1);
+      --teal: #2c625d;
+      --teal-soft: rgba(44, 98, 93, 0.1);
+      --gold: #b27a33;
+      --shadow: 0 30px 74px rgba(0, 0, 0, 0.46);
       --serif: Georgia, "Times New Roman", serif;
       --sans: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
@@ -38,9 +35,11 @@
       margin: 0;
       min-width: 320px;
       background:
-        linear-gradient(90deg, rgba(134, 199, 195, 0.06), transparent 22%, transparent 78%, rgba(189, 101, 112, 0.06)),
-        linear-gradient(180deg, #191514 0%, #11100f 48%, #0c0b0a 100%);
-      color: var(--ink);
+        radial-gradient(circle at 18% 12%, rgba(227, 154, 68, 0.12), transparent 28%),
+        radial-gradient(circle at 82% 22%, rgba(38, 82, 77, 0.14), transparent 32%),
+        linear-gradient(180deg, rgba(13, 8, 5, 0.16), rgba(6, 5, 4, 0.28)),
+        url("assets/backgrounds/hardwood-floor.jpg") center top / cover fixed;
+      color: #efe2ca;
       font-family: var(--sans);
       line-height: 1.5;
     }
@@ -49,12 +48,23 @@
       content: "";
       position: fixed;
       inset: 0;
+      z-index: -2;
       pointer-events: none;
-      background-image:
-        linear-gradient(rgba(245, 239, 231, 0.025) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(245, 239, 231, 0.018) 1px, transparent 1px);
-      background-size: 72px 72px;
-      mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.8), transparent 70%);
+      background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.16), transparent 18%, transparent 82%, rgba(0, 0, 0, 0.18)),
+        linear-gradient(180deg, rgba(0, 0, 0, 0.02), rgba(0, 0, 0, 0.16));
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      z-index: -1;
+      pointer-events: none;
+      background:
+        radial-gradient(ellipse at 50% 16%, transparent 0 42%, rgba(0, 0, 0, 0.08) 74%),
+        radial-gradient(ellipse at 50% 96%, rgba(0, 0, 0, 0.16), transparent 58%);
+      opacity: 0.72;
     }
 
     button,
@@ -79,8 +89,9 @@
       position: sticky;
       top: 0;
       z-index: 20;
-      border-bottom: 1px solid rgba(245, 239, 231, 0.1);
-      background: rgba(17, 16, 15, 0.88);
+      border-bottom: 1px solid rgba(239, 226, 202, 0.13);
+      background: rgba(13, 10, 8, 0.86);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.28);
       backdrop-filter: blur(18px);
     }
 
@@ -107,6 +118,7 @@
     }
 
     .brand strong {
+      color: #f5e8ce;
       font-family: var(--serif);
       font-size: clamp(1.9rem, 4vw, 3.35rem);
       font-weight: 400;
@@ -115,16 +127,16 @@
     }
 
     .brand span {
-      color: var(--muted);
+      color: #cdbb9d;
       font-size: 0.92rem;
       white-space: nowrap;
     }
 
     .sort-tabs {
       display: inline-flex;
-      border: 1px solid var(--line);
+      border: 1px solid rgba(239, 226, 202, 0.16);
       border-radius: 8px;
-      background: rgba(245, 239, 231, 0.04);
+      background: rgba(239, 226, 202, 0.05);
       padding: 3px;
     }
 
@@ -136,18 +148,24 @@
       border-radius: 7px;
       border: 1px solid transparent;
       padding: 0 12px;
-      color: var(--ink);
+      color: #efe2ca;
       background: transparent;
     }
 
     .sort-tabs button {
-      color: var(--muted);
+      color: #cdbb9d;
       min-width: 76px;
     }
 
+    .sort-tabs button:hover {
+      color: #fff4da;
+    }
+
     .sort-tabs button[aria-pressed="true"] {
-      background: var(--ink);
-      color: #171312;
+      border-color: rgba(232, 209, 164, 0.38);
+      background: linear-gradient(180deg, #e4c989, #a67839);
+      color: #24150c;
+      box-shadow: 0 0 0 3px rgba(232, 209, 164, 0.1);
     }
 
     .ghost-button {
@@ -167,8 +185,8 @@
 
     .primary-button {
       border-color: transparent;
-      background: var(--teal);
-      color: #0c1515;
+      background: linear-gradient(180deg, #51301a, #2b160d);
+      color: #f9e8bd;
       font-weight: 700;
     }
 
@@ -198,14 +216,14 @@
       min-height: 32px;
       border: 1px solid var(--line);
       border-radius: 999px;
-      background: rgba(245, 239, 231, 0.04);
-      color: var(--muted);
+      background: rgba(239, 226, 202, 0.05);
+      color: #cdbb9d;
       padding: 0 11px;
       font-size: 0.88rem;
     }
 
     .site-message {
-      color: var(--muted);
+      color: #cdbb9d;
       font-size: 0.92rem;
     }
 
@@ -269,9 +287,9 @@
     input,
     textarea {
       width: 100%;
-      border: 1px solid var(--line);
+      border: 1px solid rgba(80, 48, 27, 0.26);
       border-radius: 8px;
-      background: rgba(9, 8, 8, 0.46);
+      background: rgba(255, 246, 219, 0.4);
       color: var(--ink);
       padding: 11px 12px;
       outline: none;
@@ -280,7 +298,7 @@
     input:focus,
     textarea:focus {
       border-color: var(--teal);
-      box-shadow: 0 0 0 3px rgba(134, 199, 195, 0.12);
+      box-shadow: 0 0 0 3px rgba(44, 98, 93, 0.12);
     }
 
     textarea {
@@ -304,39 +322,99 @@
     }
 
     .workbench {
-      border-top: 1px solid var(--line);
+      border-top: 1px solid rgba(239, 226, 202, 0.13);
       padding-top: 24px;
     }
 
     .poem-list {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
-      gap: 24px;
+      gap: 30px;
       align-items: start;
     }
 
     .poem {
+      --sheet-image: url("assets/parchment/old-manuscript.jpg");
+      --warmth: rgba(255, 236, 190, 0.2);
+      --edge: rgba(68, 35, 13, 0.12);
+      --rule: rgba(83, 43, 17, 0.62);
       position: relative;
       overflow: hidden;
-      border: 1px solid var(--line);
-      border-radius: 8px;
-      background: linear-gradient(180deg, rgba(42, 36, 32, 0.9), rgba(27, 23, 21, 0.92));
-      box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22);
+      border: 0;
+      border-radius: 8px 5px 9px 6px;
+      background:
+        linear-gradient(135deg, rgba(255, 251, 230, 0.2), transparent 26%, var(--warmth)),
+        var(--sheet-image) center / cover;
+      color: var(--ink);
+      box-shadow:
+        var(--shadow),
+        inset 0 -26px 46px var(--edge);
+    }
+
+    .poem:nth-child(odd) {
+      transform: rotate(-0.35deg);
+    }
+
+    .poem:nth-child(even) {
+      transform: rotate(0.3deg);
+    }
+
+    .poem:nth-child(6n+2) {
+      --sheet-image: url("assets/parchment/handmade-fiber.jpg");
+      --warmth: rgba(255, 255, 245, 0.15);
+      --edge: rgba(73, 58, 34, 0.08);
+      --rule: rgba(44, 98, 93, 0.65);
+      border-radius: 5px 10px 6px 8px;
+    }
+
+    .poem:nth-child(6n+3) {
+      --sheet-image: url("assets/parchment/burnt-edge.jpg");
+      --warmth: rgba(255, 231, 173, 0.12);
+      --edge: rgba(45, 17, 8, 0.18);
+      --rule: rgba(142, 57, 64, 0.62);
+      border-radius: 10px 6px 5px 8px;
+    }
+
+    .poem:nth-child(6n+4) {
+      --sheet-image: url("assets/parchment/folded-letter.jpg");
+      --warmth: rgba(255, 243, 211, 0.16);
+      --edge: rgba(76, 49, 20, 0.1);
+      --rule: rgba(82, 50, 21, 0.68);
+    }
+
+    .poem:nth-child(6n+5) {
+      --sheet-image: url("assets/parchment/rice-paper.jpg");
+      --warmth: rgba(255, 255, 255, 0.2);
+      --edge: rgba(53, 61, 51, 0.08);
+      --rule: rgba(44, 98, 93, 0.62);
+      border-radius: 7px 5px 10px 5px;
+    }
+
+    .poem:nth-child(6n) {
+      --sheet-image: url("assets/parchment/scrap-notebook.jpg");
+      --warmth: rgba(255, 239, 198, 0.14);
+      --edge: rgba(53, 38, 20, 0.12);
+      --rule: rgba(142, 57, 64, 0.64);
     }
 
     .poem::before {
       content: "";
       position: absolute;
-      inset: 0 auto 0 0;
-      width: 5px;
-      background: var(--red);
-      opacity: 0.84;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(70, 38, 15, 0.16), transparent 8%, transparent 92%, rgba(70, 38, 15, 0.13)),
+        linear-gradient(180deg, rgba(70, 38, 15, 0.12), transparent 9%, transparent 91%, rgba(70, 38, 15, 0.16)),
+        radial-gradient(ellipse at 50% 50%, transparent 0 60%, rgba(74, 38, 14, 0.1) 72%);
+      mix-blend-mode: multiply;
     }
 
     .poem-inner {
+      position: relative;
+      z-index: 1;
       display: grid;
-      gap: 18px;
-      padding: clamp(22px, 3vw, 32px);
+      gap: 16px;
+      padding: clamp(24px, 3vw, 34px);
     }
 
     .poem-meta {
@@ -344,9 +422,10 @@
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
-      color: var(--faint);
-      font-size: 0.83rem;
-      letter-spacing: 0.08em;
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
     }
 
@@ -361,23 +440,35 @@
 
     .poem h2 {
       margin: 0;
+      color: #2f1509;
       font-family: var(--serif);
-      font-size: clamp(1.9rem, 3vw, 2.8rem);
+      font-size: clamp(2rem, 3.2vw, 3rem);
       font-weight: 400;
       line-height: 0.95;
       letter-spacing: 0;
     }
 
+    .poem h2::after {
+      content: "";
+      display: block;
+      width: 86px;
+      height: 2px;
+      margin-top: 13px;
+      background: linear-gradient(90deg, var(--rule), transparent);
+    }
+
     .poem-text {
       margin: 0;
       white-space: pre-line;
+      color: var(--ink-soft);
       font-family: var(--serif);
-      font-size: clamp(1.15rem, 1.7vw, 1.45rem);
-      line-height: 1.45;
+      font-size: clamp(1.18rem, 1.8vw, 1.52rem);
+      line-height: 1.48;
+      text-shadow: 0 1px 0 rgba(255, 247, 219, 0.32);
     }
 
     .poem-text em {
-      color: #ffc4ca;
+      color: var(--red);
       font-style: italic;
     }
 
@@ -387,33 +478,45 @@
       flex-wrap: wrap;
       gap: 9px;
       align-items: center;
+      padding-top: 2px;
     }
 
     .action-button {
       display: inline-flex;
       align-items: center;
       gap: 8px;
-      min-height: 38px;
-      border: 1px solid var(--line);
+      min-height: 36px;
+      border: 1px solid rgba(80, 48, 27, 0.26);
       border-radius: 8px;
-      background: rgba(245, 239, 231, 0.04);
-      color: var(--muted);
-      padding: 0 12px;
+      background: rgba(255, 246, 219, 0.4);
+      color: var(--ink-soft);
+      padding: 0 11px;
     }
 
     .action-button:hover:not(:disabled) {
-      border-color: var(--line-strong);
+      border-color: rgba(80, 48, 27, 0.46);
+      background: rgba(255, 246, 219, 0.58);
       color: var(--ink);
     }
 
     .action-button.like-button {
-      color: #ffc2c9;
+      color: var(--red);
     }
 
     .action-button.like-button[data-liked="true"] {
-      border-color: rgba(189, 101, 112, 0.46);
+      border-color: rgba(142, 57, 64, 0.34);
       background: var(--red-soft);
-      color: #ffd5d9;
+      color: #6c222a;
+    }
+
+    .comment-button {
+      color: var(--teal);
+    }
+
+    .comment-button[data-open="true"] {
+      border-color: rgba(44, 98, 93, 0.34);
+      background: var(--teal-soft);
+      color: #214c48;
     }
 
     .action-button:disabled {
@@ -422,9 +525,9 @@
     }
 
     .anchor-link {
-      color: var(--faint);
+      color: var(--muted);
       text-decoration: none;
-      font-size: 0.92rem;
+      font-size: 0.9rem;
     }
 
     .anchor-link:hover {
@@ -433,11 +536,13 @@
     }
 
     .comments {
+      position: relative;
+      z-index: 1;
       display: grid;
-      gap: 16px;
-      border-top: 1px solid var(--line);
-      background: rgba(11, 10, 10, 0.22);
-      padding: 20px clamp(22px, 3vw, 32px) 26px;
+      gap: 14px;
+      border-top: 1px solid rgba(80, 48, 27, 0.22);
+      background: rgba(111, 68, 30, 0.08);
+      padding: 18px clamp(24px, 3vw, 34px) 24px;
     }
 
     .comment-list {
@@ -448,7 +553,7 @@
     .comment {
       display: grid;
       gap: 3px;
-      border-left: 3px solid var(--teal);
+      border-left: 3px solid rgba(44, 98, 93, 0.52);
       padding-left: 12px;
     }
 
@@ -459,7 +564,12 @@
 
     .comment p {
       margin: 0;
-      color: var(--muted);
+      color: var(--ink-soft);
+    }
+
+    .comments .site-message {
+      color: var(--ink-soft);
+      margin: 0;
     }
 
     .comment-meta {
@@ -497,9 +607,10 @@
     }
 
     .empty-state {
-      border: 1px dashed var(--line);
+      border: 1px dashed rgba(239, 226, 202, 0.18);
       border-radius: 8px;
-      color: var(--muted);
+      background: rgba(239, 226, 202, 0.05);
+      color: #cdbb9d;
       font-family: var(--serif);
       font-size: 1.35rem;
       padding: 32px;
@@ -561,6 +672,12 @@
       .ghost-button,
       .danger-button {
         width: 100%;
+      }
+
+      .poem,
+      .poem:nth-child(odd),
+      .poem:nth-child(even) {
+        transform: none;
       }
 
       .poem-inner {
@@ -769,7 +886,7 @@
                 <span>${liked ? "Unlike" : "Like"}</span>
                 <span>${stats.likes_count}</span>
               </button>
-              <button class="action-button" type="button" data-action="comments">
+              <button class="action-button comment-button" type="button" data-action="comments" data-open="${commentsOpen ? "true" : "false"}">
                 <span>Comments</span>
                 <span>${stats.comments_count}</span>
               </button>
