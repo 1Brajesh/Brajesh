@@ -307,26 +307,11 @@
     .panel-grid {
       position: relative;
       z-index: 1;
-      display: grid;
-      grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
-      align-items: center;
-      gap: clamp(18px, 4vw, 34px);
-    }
-
-    .panel[data-flip="true"] .panel-grid {
-      grid-template-columns: minmax(0, 1.14fr) minmax(0, 0.86fr);
-    }
-
-    .panel[data-flip="true"] .panel-copy {
-      order: 2;
-    }
-
-    .panel[data-flip="true"] .frame {
-      order: 1;
+      display: block;
     }
 
     .panel-copy {
-      max-width: 28rem;
+      max-width: 44rem;
     }
 
     .panel-index {
@@ -381,6 +366,7 @@
 
     .frame {
       position: relative;
+      margin-top: clamp(20px, 3vw, 30px);
       padding: clamp(8px, 1vw, 12px);
       border-radius: 28px;
       background:
@@ -389,13 +375,13 @@
       box-shadow:
         0 0 0 1px rgba(255, 236, 206, 0.08),
         0 28px 70px rgba(0, 0, 0, 0.36);
-      transform: rotate(var(--tilt, 0deg));
+      transform: translateY(0);
       transition: transform 220ms ease, box-shadow 220ms ease;
     }
 
     .frame:hover,
     .frame:focus-within {
-      transform: rotate(0deg) translateY(-4px);
+      transform: translateY(-4px);
       box-shadow:
         0 0 0 1px rgba(255, 236, 206, 0.12),
         0 36px 86px rgba(0, 0, 0, 0.42);
@@ -477,17 +463,6 @@
       .panel,
       .gallery-closer {
         border-radius: 28px;
-      }
-
-      .panel-grid,
-      .panel[data-flip="true"] .panel-grid {
-        grid-template-columns: 1fr;
-      }
-
-      .panel-copy,
-      .panel[data-flip="true"] .panel-copy,
-      .panel[data-flip="true"] .frame {
-        order: initial;
       }
 
       .frame {
@@ -574,7 +549,7 @@
       </section>
 
       <section class="gallery" aria-label="Visual affirmations">
-        <article class="panel" id="dance" style="--accent-glow: rgba(255, 115, 54, 0.2); --tilt: -1.4deg;">
+        <article class="panel" id="dance" style="--accent-glow: rgba(255, 115, 54, 0.2);">
           <div class="panel-grid">
             <div class="panel-copy">
               <div class="panel-index">01 / Movement</div>
@@ -604,7 +579,7 @@
           </div>
         </article>
 
-        <article class="panel" id="voice" data-flip="true" style="--accent-glow: rgba(91, 159, 255, 0.2); --tilt: 1.3deg;">
+        <article class="panel" id="voice" style="--accent-glow: rgba(91, 159, 255, 0.2);">
           <div class="panel-grid">
             <div class="panel-copy">
               <div class="panel-index">02 / Voice</div>
@@ -635,7 +610,7 @@
           </div>
         </article>
 
-        <article class="panel" id="beliefs" style="--accent-glow: rgba(255, 212, 117, 0.22); --tilt: -0.9deg;">
+        <article class="panel" id="beliefs" style="--accent-glow: rgba(255, 212, 117, 0.22);">
           <div class="panel-grid">
             <div class="panel-copy">
               <div class="panel-index">03 / Beliefs</div>
@@ -666,7 +641,7 @@
           </div>
         </article>
 
-        <article class="panel" id="joy" data-flip="true" style="--accent-glow: rgba(224, 87, 255, 0.2); --tilt: 1deg;">
+        <article class="panel" id="joy" style="--accent-glow: rgba(224, 87, 255, 0.2);">
           <div class="panel-grid">
             <div class="panel-copy">
               <div class="panel-index">04 / Joy</div>
@@ -697,7 +672,7 @@
           </div>
         </article>
 
-        <article class="panel" id="ideas" style="--accent-glow: rgba(255, 190, 88, 0.22); --tilt: -1.2deg;">
+        <article class="panel" id="ideas" style="--accent-glow: rgba(255, 190, 88, 0.22);">
           <div class="panel-grid">
             <div class="panel-copy">
               <div class="panel-index">05 / Ideas</div>
