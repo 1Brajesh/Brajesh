@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Five visual affirmations arranged as a private gallery for Brajesh.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;500;600;700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="preload" href="../assets/personal/web/dance-1440.webp" as="image" imagesrcset="../assets/personal/web/dance-800.webp 800w, ../assets/personal/web/dance-1440.webp 1440w" imagesizes="(max-width: 720px) 92vw, 82vw">
+  <title>Who Am I | Brajesh</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --paper: #f7e5c6;
+      --paper-soft: rgba(247, 229, 198, 0.72);
+      --ink: #160d08;
+      --mist: rgba(255, 243, 219, 0.08);
+      --line: rgba(255, 236, 206, 0.14);
+      --line-strong: rgba(255, 236, 206, 0.3);
+      --shadow: 0 32px 90px rgba(0, 0, 0, 0.42);
+      --serif: "Cormorant Garamond", Georgia, serif;
+      --sans: "Manrope", "Avenir Next", "Segoe UI", sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      color: var(--paper);
+      font-family: var(--sans);
+      background:
+        radial-gradient(circle at top, rgba(222, 111, 29, 0.18), transparent 30%),
+        radial-gradient(circle at 80% 18%, rgba(38, 118, 172, 0.16), transparent 24%),
+        radial-gradient(circle at 50% 62%, rgba(164, 61, 97, 0.14), transparent 30%),
+        linear-gradient(180deg, #120804 0%, #07090f 42%, #120804 100%);
+      line-height: 1.55;
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    body::before {
+      z-index: -2;
+      background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.22), transparent 16%, transparent 84%, rgba(0, 0, 0, 0.2)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.22));
+    }
+
+    body::after {
+      z-index: -1;
+      opacity: 0.8;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(255, 216, 167, 0.09), transparent 18%),
+        radial-gradient(circle at 80% 10%, rgba(109, 195, 255, 0.08), transparent 16%),
+        radial-gradient(circle at 70% 74%, rgba(255, 90, 171, 0.1), transparent 20%);
+      filter: blur(30px);
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    img {
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .site-shell {
+      width: min(1220px, calc(100% - 32px));
+      margin: 0 auto;
+      padding: 20px 0 84px;
+    }
+
+    .masthead {
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      margin-bottom: 22px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(14, 10, 8, 0.72);
+      backdrop-filter: blur(20px);
+      box-shadow: 0 18px 54px rgba(0, 0, 0, 0.24);
+    }
+
+    .masthead-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 10px 12px 10px 18px;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .brand strong {
+      font-family: var(--serif);
+      font-size: clamp(2rem, 4.2vw, 3.4rem);
+      font-weight: 600;
+      line-height: 0.88;
+      letter-spacing: -0.02em;
+    }
+
+    .brand span {
+      color: rgba(247, 229, 198, 0.76);
+      font-size: 0.9rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .masthead-nav {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .pill-link {
+      min-height: 40px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 0 14px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(255, 255, 255, 0.04);
+      color: rgba(247, 229, 198, 0.82);
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+
+    .pill-link:hover,
+    .pill-link:focus-visible {
+      border-color: var(--line-strong);
+      background: rgba(255, 255, 255, 0.08);
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .pill-link.is-current {
+      background: linear-gradient(180deg, #f1cb92, #be8840);
+      border-color: transparent;
+      color: var(--ink);
+      font-weight: 800;
+    }
+
+    .hero {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 34px;
+      padding: clamp(34px, 6vw, 72px);
+      background:
+        radial-gradient(circle at 16% 18%, rgba(179, 71, 43, 0.22), transparent 20%),
+        radial-gradient(circle at 88% 20%, rgba(73, 118, 231, 0.16), transparent 22%),
+        linear-gradient(135deg, rgba(37, 18, 11, 0.9), rgba(10, 16, 28, 0.88));
+      box-shadow: var(--shadow);
+      isolation: isolate;
+    }
+
+    .hero::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(120deg, rgba(255, 255, 255, 0.04), transparent 28%, transparent 74%, rgba(255, 255, 255, 0.04)),
+        radial-gradient(circle at 50% 120%, rgba(255, 209, 140, 0.18), transparent 34%);
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: rgba(247, 229, 198, 0.7);
+      font-size: 0.84rem;
+      font-weight: 800;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+    }
+
+    .hero h1 {
+      margin: 0;
+      max-width: 8ch;
+      font-family: var(--serif);
+      font-size: clamp(4rem, 10vw, 7.5rem);
+      font-weight: 600;
+      line-height: 0.88;
+      letter-spacing: -0.04em;
+    }
+
+    .hero-copy {
+      position: relative;
+      z-index: 1;
+      max-width: 660px;
+    }
+
+    .hero-copy p {
+      margin: 18px 0 0;
+      max-width: 32rem;
+      color: rgba(247, 229, 198, 0.82);
+      font-size: clamp(1rem, 1.6vw, 1.16rem);
+    }
+
+    .hero-notes {
+      display: grid;
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .hero-note {
+      border: 1px solid rgba(255, 238, 211, 0.12);
+      border-radius: 20px;
+      padding: 14px 14px 16px;
+      background: rgba(255, 255, 255, 0.04);
+      min-width: 0;
+    }
+
+    .hero-note strong {
+      display: block;
+      font-family: var(--serif);
+      font-size: 1.45rem;
+      font-weight: 600;
+    }
+
+    .hero-note span {
+      color: rgba(247, 229, 198, 0.72);
+      font-size: 0.88rem;
+    }
+
+    .section-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin: 24px 0 0;
+    }
+
+    .section-links a {
+      border-bottom: 1px solid rgba(255, 233, 202, 0.32);
+      color: rgba(255, 235, 208, 0.88);
+      padding-bottom: 2px;
+    }
+
+    .gallery {
+      display: grid;
+      gap: 38px;
+      margin-top: 34px;
+    }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: 34px;
+      background:
+        linear-gradient(135deg, rgba(255, 255, 255, 0.04), transparent 36%),
+        rgba(14, 11, 12, 0.76);
+      box-shadow: var(--shadow);
+      padding: clamp(18px, 3vw, 28px);
+      isolation: isolate;
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: auto auto 12% -8%;
+      width: 320px;
+      height: 320px;
+      border-radius: 50%;
+      background: var(--accent-glow, rgba(255, 193, 124, 0.16));
+      filter: blur(10px);
+      opacity: 0.9;
+      z-index: 0;
+    }
+
+    .panel::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 20%, transparent 80%, rgba(255, 255, 255, 0.03)),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02), transparent 14%, transparent 86%, rgba(255, 255, 255, 0.02));
+      pointer-events: none;
+    }
+
+    .panel-grid {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+      align-items: center;
+      gap: clamp(18px, 4vw, 34px);
+    }
+
+    .panel[data-flip="true"] .panel-grid {
+      grid-template-columns: minmax(0, 1.14fr) minmax(0, 0.86fr);
+    }
+
+    .panel[data-flip="true"] .panel-copy {
+      order: 2;
+    }
+
+    .panel[data-flip="true"] .frame {
+      order: 1;
+    }
+
+    .panel-copy {
+      max-width: 28rem;
+    }
+
+    .panel-index {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 14px;
+      color: rgba(247, 229, 198, 0.74);
+      font-size: 0.8rem;
+      font-weight: 800;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+    }
+
+    .panel-index::before {
+      content: "";
+      width: 38px;
+      height: 1px;
+      background: currentColor;
+    }
+
+    .panel-copy h2 {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: clamp(2.7rem, 5vw, 4.6rem);
+      font-weight: 600;
+      line-height: 0.92;
+      letter-spacing: -0.03em;
+    }
+
+    .panel-copy p {
+      margin: 14px 0 0;
+      color: rgba(247, 229, 198, 0.76);
+      font-size: 1rem;
+    }
+
+    .keywords {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 20px 0 0;
+    }
+
+    .keywords span {
+      border: 1px solid rgba(255, 234, 205, 0.14);
+      border-radius: 999px;
+      padding: 6px 11px;
+      background: rgba(255, 255, 255, 0.04);
+      color: rgba(247, 229, 198, 0.78);
+      font-size: 0.84rem;
+    }
+
+    .frame {
+      position: relative;
+      padding: clamp(8px, 1vw, 12px);
+      border-radius: 28px;
+      background:
+        linear-gradient(135deg, rgba(255, 233, 198, 0.52), rgba(110, 64, 26, 0.42)),
+        rgba(17, 12, 10, 0.92);
+      box-shadow:
+        0 0 0 1px rgba(255, 236, 206, 0.08),
+        0 28px 70px rgba(0, 0, 0, 0.36);
+      transform: rotate(var(--tilt, 0deg));
+      transition: transform 220ms ease, box-shadow 220ms ease;
+    }
+
+    .frame:hover,
+    .frame:focus-within {
+      transform: rotate(0deg) translateY(-4px);
+      box-shadow:
+        0 0 0 1px rgba(255, 236, 206, 0.12),
+        0 36px 86px rgba(0, 0, 0, 0.42);
+    }
+
+    .frame img {
+      aspect-ratio: 1672 / 941;
+      object-fit: cover;
+      border-radius: 20px;
+      box-shadow: inset 0 0 0 1px rgba(255, 245, 222, 0.12);
+      background: #0d0907;
+    }
+
+    .gallery-closer {
+      margin-top: 36px;
+      text-align: center;
+      color: rgba(247, 229, 198, 0.72);
+      font-size: 0.95rem;
+    }
+
+    .gallery-closer strong {
+      display: block;
+      margin-bottom: 10px;
+      font-family: var(--serif);
+      font-size: clamp(2.1rem, 4vw, 3.3rem);
+      font-weight: 600;
+      line-height: 0.95;
+      color: var(--paper);
+    }
+
+    .gallery-closer a {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      border: 1px solid var(--line-strong);
+      border-radius: 999px;
+      padding: 0 16px;
+      background: rgba(255, 255, 255, 0.05);
+    }
+
+    .gallery-closer-links {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 10px;
+      margin-top: 18px;
+    }
+
+    @media (max-width: 1080px) {
+      .hero-notes {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+    }
+
+    @media (max-width: 820px) {
+      .masthead {
+        border-radius: 24px;
+      }
+
+      .masthead-inner {
+        align-items: flex-start;
+        flex-direction: column;
+      }
+
+      .masthead-nav {
+        width: 100%;
+        justify-content: flex-start;
+      }
+
+      .hero {
+        border-radius: 28px;
+      }
+
+      .hero-notes {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .panel,
+      .gallery-closer {
+        border-radius: 28px;
+      }
+
+      .panel-grid,
+      .panel[data-flip="true"] .panel-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .panel-copy,
+      .panel[data-flip="true"] .panel-copy,
+      .panel[data-flip="true"] .frame {
+        order: initial;
+      }
+
+      .frame {
+        transform: none;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .site-shell {
+        width: calc(100% - 18px);
+      }
+
+      .hero,
+      .panel {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+
+      .hero-notes {
+        grid-template-columns: 1fr;
+      }
+
+      .pill-link {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="site-shell">
+    <header class="masthead">
+      <div class="masthead-inner">
+        <a class="brand" href="../" aria-label="Back to Brajesh poems">
+          <strong>Brajesh</strong>
+          <span>Who Am I</span>
+        </a>
+        <nav class="masthead-nav" aria-label="Site links">
+          <a class="pill-link" href="../">Poems</a>
+          <a class="pill-link is-current" href="./">Who Am I</a>
+        </nav>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero" id="top">
+        <div class="hero-copy">
+          <p class="eyebrow">Private Gallery</p>
+          <h1>Who am I?</h1>
+          <p>
+            Five visual affirmations for the page owner, arranged as a walk through motion, voice, convictions,
+            delight, and ideas. This page is meant to be browsed slowly.
+          </p>
+          <div class="section-links" aria-label="Jump to affirmation">
+            <a href="#dance">Dance</a>
+            <a href="#voice">Voice</a>
+            <a href="#beliefs">Beliefs</a>
+            <a href="#joy">Joy</a>
+            <a href="#ideas">Ideas</a>
+          </div>
+        </div>
+
+        <div class="hero-notes" aria-hidden="true">
+          <div class="hero-note">
+            <strong>01</strong>
+            <span>Movement</span>
+          </div>
+          <div class="hero-note">
+            <strong>02</strong>
+            <span>Voice</span>
+          </div>
+          <div class="hero-note">
+            <strong>03</strong>
+            <span>Beliefs</span>
+          </div>
+          <div class="hero-note">
+            <strong>04</strong>
+            <span>Joy</span>
+          </div>
+          <div class="hero-note">
+            <strong>05</strong>
+            <span>Ideas</span>
+          </div>
+        </div>
+      </section>
+
+      <section class="gallery" aria-label="Visual affirmations">
+        <article class="panel" id="dance" style="--accent-glow: rgba(255, 115, 54, 0.2); --tilt: -1.4deg;">
+          <div class="panel-grid">
+            <div class="panel-copy">
+              <div class="panel-index">01 / Movement</div>
+              <h2>Dance</h2>
+              <p>
+                The page opens in heat and motion: a framed reminder that identity can be built through rhythm,
+                confidence, and follow-through.
+              </p>
+              <div class="keywords">
+                <span>lead</span>
+                <span>create</span>
+                <span>breathe</span>
+              </div>
+            </div>
+            <figure class="frame">
+              <picture>
+                <source
+                  type="image/webp"
+                  srcset="../assets/personal/web/dance-800.webp 800w, ../assets/personal/web/dance-1440.webp 1440w"
+                  sizes="(max-width: 820px) 100vw, 58vw">
+                <img
+                  src="../assets/personal/web/dance-1440.webp"
+                  alt="A richly lit dance scene in a frame with a handwritten affirmation about confidence, leadership, music, and breath."
+                  fetchpriority="high">
+              </picture>
+            </figure>
+          </div>
+        </article>
+
+        <article class="panel" id="voice" data-flip="true" style="--accent-glow: rgba(91, 159, 255, 0.2); --tilt: 1.3deg;">
+          <div class="panel-grid">
+            <div class="panel-copy">
+              <div class="panel-index">02 / Voice</div>
+              <h2>Speak to the room</h2>
+              <p>
+                The second scene turns outward. It treats voice as presence: not just being heard, but shaping the
+                people listening.
+              </p>
+              <div class="keywords">
+                <span>presence</span>
+                <span>audience</span>
+                <span>transformation</span>
+              </div>
+            </div>
+            <figure class="frame">
+              <picture>
+                <source
+                  type="image/webp"
+                  srcset="../assets/personal/web/voice-800.webp 800w, ../assets/personal/web/voice-1440.webp 1440w"
+                  sizes="(max-width: 820px) 100vw, 58vw">
+                <img
+                  src="../assets/personal/web/voice-1440.webp"
+                  alt="A speaker onstage before a crowd, lit from above, with an affirmation about voice, melody, and transformation."
+                  loading="lazy"
+                  decoding="async">
+              </picture>
+            </figure>
+          </div>
+        </article>
+
+        <article class="panel" id="beliefs" style="--accent-glow: rgba(255, 212, 117, 0.22); --tilt: -0.9deg;">
+          <div class="panel-grid">
+            <div class="panel-copy">
+              <div class="panel-index">03 / Beliefs</div>
+              <h2>Stand rooted</h2>
+              <p>
+                This one grounds the sequence. The image carries a steadier energy, where conviction feels luminous
+                rather than loud.
+              </p>
+              <div class="keywords">
+                <span>roots</span>
+                <span>standards</span>
+                <span>clarity</span>
+              </div>
+            </div>
+            <figure class="frame">
+              <picture>
+                <source
+                  type="image/webp"
+                  srcset="../assets/personal/web/beliefs-800.webp 800w, ../assets/personal/web/beliefs-1440.webp 1440w"
+                  sizes="(max-width: 820px) 100vw, 58vw">
+                <img
+                  src="../assets/personal/web/beliefs-1440.webp"
+                  alt="A glowing tree at dusk behind a suited figure, with written affirmations about beliefs, roots, standards, and not people pleasing."
+                  loading="lazy"
+                  decoding="async">
+              </picture>
+            </figure>
+          </div>
+        </article>
+
+        <article class="panel" id="joy" data-flip="true" style="--accent-glow: rgba(224, 87, 255, 0.2); --tilt: 1deg;">
+          <div class="panel-grid">
+            <div class="panel-copy">
+              <div class="panel-index">04 / Joy</div>
+              <h2>Beams in the now</h2>
+              <p>
+                The palette breaks open here. It is the lightest part of the sequence, using color and fantasy as a
+                deliberate refusal to wait for permission.
+              </p>
+              <div class="keywords">
+                <span>presence</span>
+                <span>delight</span>
+                <span>permissionless</span>
+              </div>
+            </div>
+            <figure class="frame">
+              <picture>
+                <source
+                  type="image/webp"
+                  srcset="../assets/personal/web/joy-800.webp 800w, ../assets/personal/web/joy-1440.webp 1440w"
+                  sizes="(max-width: 820px) 100vw, 58vw">
+                <img
+                  src="../assets/personal/web/joy-1440.webp"
+                  alt="A radiant fantasy landscape around a figure at sunrise, with glowing handwritten words about joy in the present moment."
+                  loading="lazy"
+                  decoding="async">
+              </picture>
+            </figure>
+          </div>
+        </article>
+
+        <article class="panel" id="ideas" style="--accent-glow: rgba(255, 190, 88, 0.22); --tilt: -1.2deg;">
+          <div class="panel-grid">
+            <div class="panel-copy">
+              <div class="panel-index">05 / Ideas</div>
+              <h2>Turn thought into wealth</h2>
+              <p>
+                The gallery closes with ambition. Ideas are shown not as abstractions, but as engines that can move
+                outward into money, reach, and legacy.
+              </p>
+              <div class="keywords">
+                <span>invention</span>
+                <span>wealth</span>
+                <span>legacy</span>
+              </div>
+            </div>
+            <figure class="frame">
+              <picture>
+                <source
+                  type="image/webp"
+                  srcset="../assets/personal/web/ideas-800.webp 800w, ../assets/personal/web/ideas-1440.webp 1440w"
+                  sizes="(max-width: 820px) 100vw, 58vw">
+                <img
+                  src="../assets/personal/web/ideas-1440.webp"
+                  alt="A suited figure facing a glowing city skyline, with golden words about spinning ideas into money and success."
+                  loading="lazy"
+                  decoding="async">
+              </picture>
+            </figure>
+          </div>
+        </article>
+      </section>
+
+      <div class="gallery-closer">
+        <strong>Five scenes, one self-portrait.</strong>
+        Browse again from the top, or return to the poems.
+        <div class="gallery-closer-links">
+          <a href="#top">Back to top</a>
+          <a href="../">Back to poems</a>
+        </div>
+      </div>
+    </main>
+  </div>
+</body>
+</html>

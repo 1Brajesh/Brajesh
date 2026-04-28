@@ -224,6 +224,25 @@
       font-size: 0.88rem;
     }
 
+    .status-link {
+      display: inline-flex;
+      align-items: center;
+      min-height: 32px;
+      border: 1px solid rgba(232, 209, 164, 0.24);
+      border-radius: 999px;
+      background: rgba(232, 209, 164, 0.08);
+      color: #f3deb4;
+      padding: 0 11px;
+      font-size: 0.88rem;
+      text-decoration: none;
+    }
+
+    .status-link:hover {
+      border-color: rgba(232, 209, 164, 0.4);
+      background: rgba(232, 209, 164, 0.14);
+      color: #fff3d3;
+    }
+
     .site-message {
       color: #cdbb9d;
       font-size: 0.92rem;
@@ -708,6 +727,7 @@
       <span class="pill" id="poemCount">0 poems</span>
       <span class="pill" id="likeCount">0 likes</span>
       <span class="pill" id="commentCount">0 comments</span>
+      <a class="status-link" href="whoami/">Who am I</a>
       <span class="site-message" id="siteMessage" role="status"></span>
     </div>
 
