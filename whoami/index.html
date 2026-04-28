@@ -199,25 +199,19 @@
 
     .hero h1 {
       margin: 0;
-      max-width: 8ch;
       font-family: var(--serif);
-      font-size: clamp(4rem, 10vw, 7.5rem);
+      font-size: clamp(2.9rem, 10vw, 7.5rem);
       font-weight: 600;
-      line-height: 0.88;
+      line-height: 0.9;
       letter-spacing: -0.04em;
+      max-width: none;
+      white-space: nowrap;
     }
 
     .hero-copy {
       position: relative;
       z-index: 1;
-      max-width: 660px;
-    }
-
-    .hero-copy p {
-      margin: 18px 0 0;
-      max-width: 32rem;
-      color: rgba(247, 229, 198, 0.82);
-      font-size: clamp(1rem, 1.6vw, 1.16rem);
+      max-width: none;
     }
 
     .hero-notes {
@@ -230,36 +224,28 @@
     }
 
     .hero-note {
-      border: 1px solid rgba(255, 238, 211, 0.12);
-      border-radius: 20px;
-      padding: 14px 14px 16px;
+      display: block;
+      overflow: hidden;
+      border: 1px solid rgba(255, 238, 211, 0.16);
+      border-radius: 22px;
       background: rgba(255, 255, 255, 0.04);
       min-width: 0;
+      box-shadow: 0 18px 44px rgba(0, 0, 0, 0.22);
+      transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
     }
 
-    .hero-note strong {
-      display: block;
-      font-family: var(--serif);
-      font-size: 1.45rem;
-      font-weight: 600;
+    .hero-note:hover,
+    .hero-note:focus-visible {
+      transform: translateY(-3px);
+      border-color: rgba(255, 238, 211, 0.3);
+      box-shadow: 0 26px 54px rgba(0, 0, 0, 0.3);
+      outline: none;
     }
 
-    .hero-note span {
-      color: rgba(247, 229, 198, 0.72);
-      font-size: 0.88rem;
-    }
-
-    .section-links {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin: 24px 0 0;
-    }
-
-    .section-links a {
-      border-bottom: 1px solid rgba(255, 233, 202, 0.32);
-      color: rgba(255, 235, 208, 0.88);
-      padding-bottom: 2px;
+    .hero-note img {
+      aspect-ratio: 1672 / 941;
+      object-fit: cover;
+      transform: scale(1.01);
     }
 
     .gallery {
@@ -510,41 +496,25 @@
       <section class="hero" id="top">
         <div class="hero-copy">
           <p class="eyebrow">Private Gallery</p>
-          <h1>Who am I?</h1>
-          <p>
-            Five visual affirmations for the page owner, arranged as a walk through motion, voice, convictions,
-            delight, and ideas. This page is meant to be browsed slowly.
-          </p>
-          <div class="section-links" aria-label="Jump to affirmation">
-            <a href="#dance">Dance</a>
-            <a href="#voice">Voice</a>
-            <a href="#beliefs">Beliefs</a>
-            <a href="#joy">Joy</a>
-            <a href="#ideas">Ideas</a>
-          </div>
+          <h1>Who Am I?</h1>
         </div>
 
-        <div class="hero-notes" aria-hidden="true">
-          <div class="hero-note">
-            <strong>01</strong>
-            <span>Movement</span>
-          </div>
-          <div class="hero-note">
-            <strong>02</strong>
-            <span>Voice</span>
-          </div>
-          <div class="hero-note">
-            <strong>03</strong>
-            <span>Beliefs</span>
-          </div>
-          <div class="hero-note">
-            <strong>04</strong>
-            <span>Joy</span>
-          </div>
-          <div class="hero-note">
-            <strong>05</strong>
-            <span>Ideas</span>
-          </div>
+        <div class="hero-notes" aria-label="Gallery thumbnails">
+          <a class="hero-note" href="#dance" aria-label="Go to Dance">
+            <img src="../assets/personal/web/dance-800.webp" alt="Thumbnail preview of the dance affirmation." loading="eager" decoding="async">
+          </a>
+          <a class="hero-note" href="#voice" aria-label="Go to Voice">
+            <img src="../assets/personal/web/voice-800.webp" alt="Thumbnail preview of the speaking affirmation." loading="eager" decoding="async">
+          </a>
+          <a class="hero-note" href="#beliefs" aria-label="Go to Beliefs">
+            <img src="../assets/personal/web/beliefs-800.webp" alt="Thumbnail preview of the beliefs affirmation." loading="eager" decoding="async">
+          </a>
+          <a class="hero-note" href="#joy" aria-label="Go to Joy">
+            <img src="../assets/personal/web/joy-800.webp" alt="Thumbnail preview of the joy affirmation." loading="eager" decoding="async">
+          </a>
+          <a class="hero-note" href="#ideas" aria-label="Go to Ideas">
+            <img src="../assets/personal/web/ideas-800.webp" alt="Thumbnail preview of the ideas affirmation." loading="eager" decoding="async">
+          </a>
         </div>
       </section>
 
@@ -645,7 +615,7 @@
           <div class="panel-grid">
             <div class="panel-copy">
               <div class="panel-index">04 / Joy</div>
-              <h2>Beams in the now</h2>
+              <h2>Beams in the joy of now</h2>
               <p>
                 The palette breaks open here. It is the lightest part of the sequence, using color and fantasy as a
                 deliberate refusal to wait for permission.
