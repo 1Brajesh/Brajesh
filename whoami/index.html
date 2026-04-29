@@ -333,15 +333,20 @@
 
     .panel-copy p {
       margin: 18px auto 0;
-      max-width: 22ch;
+      width: fit-content;
+      max-width: 100%;
       color: rgba(247, 229, 198, 0.92);
       font-family: var(--serif);
-      font-size: clamp(1.5rem, 2.45vw, 2.2rem);
+      font-size: clamp(0.95rem, 0.58rem + 1.95vw, 2.02rem);
       font-weight: 500;
       line-height: 1.48;
       letter-spacing: 0.01em;
       text-shadow: 0 1px 0 rgba(0, 0, 0, 0.16);
-      white-space: pre-line;
+    }
+
+    .panel-copy p span {
+      display: block;
+      white-space: nowrap;
     }
 
     .frame {
@@ -519,10 +524,10 @@
               <div class="panel-index">01 / Movement</div>
               <h2>Dance</h2>
               <p>
-                In the dance of life
-                I confidently create and decisively lead
-                Feeling the music
-                And breathing the beat
+                <span>In the dance of life</span>
+                <span>I confidently create and decisively lead</span>
+                <span>Feeling the music</span>
+                <span>And breathing the beat</span>
               </p>
             </div>
             <figure class="frame">
@@ -546,10 +551,10 @@
               <div class="panel-index">02 / Voice</div>
               <h2>Speak to the room</h2>
               <p>
-                My voice a dynamic melody
-                Whispers in every ear
-                Weaving arcs for my characters
-                Transforming all that hear
+                <span>My voice a dynamic melody</span>
+                <span>Whispers in every ear</span>
+                <span>Weaving arcs for my characters</span>
+                <span>Transforming all that hear</span>
               </p>
             </div>
             <figure class="frame">
@@ -574,10 +579,10 @@
               <div class="panel-index">03 / Beliefs</div>
               <h2>Stand rooted</h2>
               <p>
-                I stand for my beliefs
-                Rooted like a tree
-                I draw my standards in the crease
-                I do not people please
+                <span>I stand for my beliefs</span>
+                <span>Rooted like a tree</span>
+                <span>I draw my standards in the crease</span>
+                <span>I do not people please</span>
               </p>
             </div>
             <figure class="frame">
@@ -602,10 +607,10 @@
               <div class="panel-index">04 / Joy</div>
               <h2>Beams in the joy of now</h2>
               <p>
-                I am he that beams
-                In the joy of now
-                No reason needed
-                Just the joy of now
+                <span>I am he that beams</span>
+                <span>In the joy of now</span>
+                <span>No reason needed</span>
+                <span>Just the joy of now</span>
               </p>
             </div>
             <figure class="frame">
@@ -630,10 +635,10 @@
               <div class="panel-index">05 / Ideas</div>
               <h2>Turn thought into wealth</h2>
               <p>
-                I spin ideas and
-                My ideas money invite
-                In the game of riches
-                I shine so bright
+                <span>I spin ideas and</span>
+                <span>My ideas money invite</span>
+                <span>In the game of riches</span>
+                <span>I shine so bright</span>
               </p>
             </div>
             <figure class="frame">
