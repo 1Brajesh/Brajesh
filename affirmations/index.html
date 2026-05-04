@@ -577,6 +577,20 @@
       color: rgba(255, 255, 255, 0.88);
     }
 
+    .display-mode .theme-pill:hover,
+    .display-mode .theme-pill:focus-visible,
+    .display-mode .theme-pill[aria-pressed="true"] {
+      border-color: rgba(244, 204, 138, 0.76);
+      background: rgba(244, 204, 138, 0.18);
+      color: #fff3d6;
+      box-shadow: 0 0 0 1px rgba(244, 204, 138, 0.16), 0 0 24px rgba(244, 204, 138, 0.18);
+      transform: translateY(-1px);
+    }
+
+    .display-mode .theme-pill.is-random[aria-pressed="true"] {
+      background: linear-gradient(180deg, rgba(244, 204, 138, 0.34), rgba(255, 255, 255, 0.06));
+    }
+
     .display-body {
       position: relative;
       min-height: 0;

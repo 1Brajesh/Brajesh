@@ -51,16 +51,34 @@ const elements = {
   displayBody: document.querySelector("#displayBody"),
   displayStage: document.querySelector("#displayStage"),
   displayText: document.querySelector("#displayText"),
-  displayMeta: document.querySelector("#displayMeta"),
   displayAnnouncer: document.querySelector("#displayAnnouncer"),
   startDisplay: document.querySelector("#startDisplay"),
   exitDisplay: document.querySelector("#exitDisplay"),
 };
+let displayFitFrame = 0;
 
 function setStatusElement(element, text, tone = "") {
   if (!element) return;
   element.textContent = text;
   element.dataset.tone = tone;
+}
+
+function scheduleDisplayFit() {
+  if (typeof window.requestAnimationFrame !== "function") {
+    fitDisplayText();
+    return;
+  }
+
+  if (displayFitFrame) {
+    window.cancelAnimationFrame(displayFitFrame);
+  }
+
+  displayFitFrame = window.requestAnimationFrame(() => {
+    displayFitFrame = window.requestAnimationFrame(() => {
+      displayFitFrame = 0;
+      fitDisplayText();
+    });
+  });
 }
 
 function setPageStatus(text, tone = "") {
@@ -643,14 +661,14 @@ function renderDisplayItem(item) {
   if (!item) {
     elements.displayText.textContent = "No affirmations in this theme yet.";
     elements.displayAnnouncer.textContent = "No affirmations available.";
-    fitDisplayText();
+    scheduleDisplayFit();
     return;
   }
 
   state.currentDisplayId = item.id;
   elements.displayText.textContent = item.body;
   elements.displayAnnouncer.textContent = item.body;
-  fitDisplayText();
+  scheduleDisplayFit();
 }
 
 function buildDisplayQueue() {
@@ -925,7 +943,7 @@ document.addEventListener("keydown", (event) => {
 
 window.addEventListener("resize", () => {
   if (!elements.displayMode.hidden) {
-    fitDisplayText();
+    scheduleDisplayFit();
   }
 });
 
