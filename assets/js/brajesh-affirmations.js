@@ -642,7 +642,6 @@ function exportCSV() {
 function renderDisplayItem(item) {
   if (!item) {
     elements.displayText.textContent = "No affirmations in this theme yet.";
-    elements.displayMeta.textContent = "Theme: Empty";
     elements.displayAnnouncer.textContent = "No affirmations available.";
     fitDisplayText();
     return;
@@ -650,7 +649,6 @@ function renderDisplayItem(item) {
 
   state.currentDisplayId = item.id;
   elements.displayText.textContent = item.body;
-  elements.displayMeta.textContent = `Theme: ${getThemeLabel(state.selectedTheme)} • Tap for next`;
   elements.displayAnnouncer.textContent = item.body;
   fitDisplayText();
 }
