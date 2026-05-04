@@ -147,6 +147,12 @@
       color: var(--teal);
     }
 
+    .helper-text {
+      margin: 0;
+      color: var(--faint);
+      font-size: 0.9rem;
+    }
+
     .form-grid {
       display: grid;
       gap: 12px;
@@ -423,15 +429,19 @@
 
     <section class="panel" id="loginPanel">
       <div class="panel-head">
-        <h1>Admin Login</h1>
+        <div>
+          <h1>Magic Link Login</h1>
+          <p class="helper-text" id="sessionHint">Use your approved admin email. A sign-in link will be emailed to you.</p>
+        </div>
       </div>
       <form class="form-grid" id="loginForm">
         <label>
-          Password
-          <input name="password" type="password" autocomplete="current-password" required>
+          Email
+          <input name="email" type="email" autocomplete="email" inputmode="email" required>
         </label>
         <div class="button-row">
-          <button class="primary-button" type="submit">Sign In</button>
+          <button class="ghost-button" id="loginLogoutButton" type="button" hidden>Use Different Email</button>
+          <button class="primary-button" type="submit">Send Magic Link</button>
         </div>
       </form>
     </section>
@@ -439,7 +449,10 @@
     <section id="adminPanel" hidden>
       <section class="panel">
         <div class="panel-head">
-          <h1>Manage Poems</h1>
+          <div>
+            <h1>Manage Poems</h1>
+            <p class="helper-text" id="adminIdentity"></p>
+          </div>
           <button class="ghost-button" id="logoutButton" type="button">Sign Out</button>
         </div>
         <form class="form-grid" id="newPoemForm">
@@ -472,14 +485,18 @@
   </main>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script>
-    const SUPABASE_URL = "https://pjbpghknzqmwfykbtvzp.supabase.co";
-    const SUPABASE_KEY = "sb_publishable_c-jEz8WNtOn5etyRxCrKNw_WIU-GBPE";
-    const TOKEN_STORAGE = "brajesh_admin_token";
+  <script type="module">
+    import {
+      createBrajeshClient,
+      sendBrajeshMagicLink,
+      requireBrajeshAdmin,
+      signOutBrajesh,
+    } from "../assets/js/brajesh-auth.js";
 
     const state = {
-      token: localStorage.getItem(TOKEN_STORAGE) || "",
+      user: null,
       poems: [],
+      stats: new Map(),
       comments: new Map(),
     };
 
@@ -488,17 +505,15 @@
       loginPanel: document.querySelector("#loginPanel"),
       adminPanel: document.querySelector("#adminPanel"),
       loginForm: document.querySelector("#loginForm"),
+      loginLogoutButton: document.querySelector("#loginLogoutButton"),
       logoutButton: document.querySelector("#logoutButton"),
+      sessionHint: document.querySelector("#sessionHint"),
+      adminIdentity: document.querySelector("#adminIdentity"),
       newPoemForm: document.querySelector("#newPoemForm"),
       poemList: document.querySelector("#poemList"),
     };
 
-    const db = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
-      auth: {
-        persistSession: false,
-        autoRefreshToken: false,
-      },
-    });
+    const db = createBrajeshClient();
 
     function setStatus(text, tone = "") {
       elements.status.textContent = text;
@@ -513,6 +528,16 @@
         .replace(/"/g, "&quot;");
     }
 
+    function slugify(value) {
+      const slug = String(value || "")
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/(^-|-$)/g, "");
+
+      return slug || `poem-${Date.now()}`;
+    }
+
     function showLogin() {
       elements.loginPanel.hidden = false;
       elements.adminPanel.hidden = true;
@@ -523,19 +548,29 @@
       elements.adminPanel.hidden = false;
     }
 
-    function setLoginBusy(isBusy) {
-      const button = elements.loginForm.querySelector("button[type='submit']");
-      elements.loginForm.elements.password.disabled = isBusy;
-      button.disabled = isBusy;
-      button.textContent = isBusy ? "Signing In" : "Sign In";
+    function updateIdentityUI() {
+      if (state.user?.email) {
+        elements.sessionHint.textContent = `Signed in as ${state.user.email}. Use a different email if needed.`;
+        elements.loginLogoutButton.hidden = false;
+        elements.adminIdentity.textContent = `Signed in as ${state.user.email}`;
+        return;
+      }
+
+      elements.sessionHint.textContent = "Use your approved admin email. A sign-in link will be emailed to you.";
+      elements.loginLogoutButton.hidden = true;
+      elements.adminIdentity.textContent = "";
     }
 
-    function getLoginSession(data) {
-      const session = Array.isArray(data) ? data[0] : data;
-      if (!session?.token) {
-        throw new Error("Admin login did not return a session token.");
-      }
-      return session;
+    function setLoginBusy(isBusy) {
+      const submitButton = elements.loginForm.querySelector("button[type='submit']");
+      elements.loginForm.elements.email.disabled = isBusy;
+      elements.loginLogoutButton.disabled = isBusy;
+      submitButton.disabled = isBusy;
+      submitButton.textContent = isBusy ? "Sending Link..." : "Send Magic Link";
+    }
+
+    function getStats(poemId) {
+      return state.stats.get(poemId) || { likes_count: 0, comments_count: 0 };
     }
 
     function getPoem(poemId) {
@@ -636,41 +671,100 @@
       }, 1400);
     }
 
-    async function loadAdminData() {
-      if (!state.token) {
-        showLogin();
-        return;
+    function getNextDisplayOrder() {
+      return state.poems.reduce((maxOrder, poem) => Math.max(maxOrder, Number(poem.display_order) || 0), 0) + 10;
+    }
+
+    function buildPoemPayload(data, displayOrder = null) {
+      const title = String(data.get("title") || "").trim();
+      const slug = slugify(String(data.get("slug") || "").trim() || title);
+      const body = String(data.get("body") || "").trim();
+      const published = data.get("published") === "on";
+
+      const payload = {
+        title,
+        slug,
+        body,
+        published,
+      };
+
+      if (displayOrder !== null) {
+        payload.display_order = displayOrder;
       }
 
-      setStatus("Loading.");
+      return payload;
+    }
 
-      const [poemsResult, commentsResult] = await Promise.all([
-        db.rpc("brajesh_admin_poems", { admin_token: state.token }),
-        db.rpc("brajesh_admin_comments", { admin_token: state.token }),
-      ]);
-
-      const error = poemsResult.error || commentsResult.error;
-      if (error) {
-        localStorage.removeItem(TOKEN_STORAGE);
-        state.token = "";
-        showLogin();
-        setStatus(error.message, "error");
-        return;
-      }
-
-      state.poems = poemsResult.data || [];
+    function resetStateCollections() {
+      state.poems = [];
+      state.stats = new Map();
       state.comments = new Map();
+    }
 
-      for (const comment of commentsResult.data || []) {
-        if (!state.comments.has(comment.poem_id)) {
-          state.comments.set(comment.poem_id, []);
+    async function loadAdminData(options = {}) {
+      try {
+        if (!options.silent) {
+          setStatus("Checking access.");
         }
-        state.comments.get(comment.poem_id).push(comment);
-      }
 
-      showAdmin();
-      render();
-      setStatus("");
+        const { user, isAdmin } = await requireBrajeshAdmin(db);
+        state.user = user;
+        updateIdentityUI();
+
+        if (!user) {
+          resetStateCollections();
+          showLogin();
+          if (!options.silent) {
+            setStatus("Enter your email to receive a magic link.");
+          }
+          return;
+        }
+
+        if (!isAdmin) {
+          resetStateCollections();
+          showLogin();
+          setStatus(`${user.email} is signed in, but this email does not have Brajesh admin access.`, "error");
+          return;
+        }
+
+        if (!options.silent) {
+          setStatus("Loading.");
+        }
+
+        const [poemsResult, statsResult, commentsResult] = await Promise.all([
+          db.from("brajesh_poems")
+            .select("id, slug, title, body, display_order, published, created_at, updated_at")
+            .order("display_order", { ascending: true }),
+          db.from("brajesh_poem_stats")
+            .select("poem_id, likes_count, comments_count"),
+          db.from("brajesh_comments")
+            .select("id, poem_id, author_name, body, approved, created_at, updated_at")
+            .order("created_at", { ascending: true }),
+        ]);
+
+        const error = poemsResult.error || statsResult.error || commentsResult.error;
+        if (error) {
+          throw error;
+        }
+
+        state.poems = poemsResult.data || [];
+        state.stats = new Map((statsResult.data || []).map((row) => [row.poem_id, row]));
+        state.comments = new Map();
+
+        for (const comment of commentsResult.data || []) {
+          if (!state.comments.has(comment.poem_id)) {
+            state.comments.set(comment.poem_id, []);
+          }
+          state.comments.get(comment.poem_id).push(comment);
+        }
+
+        showAdmin();
+        render();
+        setStatus("");
+      } catch (error) {
+        showLogin();
+        setStatus(error.message || "Could not load admin data.", "error");
+      }
     }
 
     function render() {
@@ -681,6 +775,7 @@
 
     function renderPoem(poem, index) {
       const comments = getComments(poem.id);
+      const stats = getStats(poem.id);
       const isFirst = index === 0;
       const isLast = index === state.poems.length - 1;
 
@@ -688,8 +783,8 @@
         <article class="poem" data-poem-id="${poem.id}">
           <form class="poem-body form-grid" data-action="save-poem">
             <div class="poem-meta">
-              <span>${poem.likes_count} likes</span>
-              <span>${poem.comments_count} comments</span>
+              <span>${stats.likes_count} likes</span>
+              <span>${stats.comments_count} comments</span>
               ${poem.published ? "" : '<span class="tag">Hidden</span>'}
             </div>
             <h3>${escapeHtml(poem.title)}</h3>
@@ -740,45 +835,99 @@
       `;
     }
 
+    function clearAuthHash() {
+      if (!window.location.hash) return;
+
+      const hash = window.location.hash.slice(1);
+      const params = new URLSearchParams(hash);
+
+      if (params.has("access_token") || params.has("refresh_token") || params.has("error_description")) {
+        window.history.replaceState({}, document.title, `${window.location.pathname}${window.location.search}`);
+      }
+    }
+
+    async function handleSignOut(successMessage = "Signed out.") {
+      let signOutFailed = false;
+
+      try {
+        await signOutBrajesh(db);
+      } catch (error) {
+        signOutFailed = true;
+        setStatus(error.message || "Could not sign out.", "error");
+      }
+
+      if (signOutFailed) {
+        return;
+      }
+
+      state.user = null;
+      resetStateCollections();
+      updateIdentityUI();
+      showLogin();
+      setStatus(successMessage, "ok");
+    }
+
+    async function movePoem(poemId, moveDirection) {
+      const currentIndex = state.poems.findIndex((poem) => poem.id === poemId);
+      if (currentIndex === -1) return false;
+
+      const targetIndex = moveDirection === "up" ? currentIndex - 1 : currentIndex + 1;
+      if (targetIndex < 0 || targetIndex >= state.poems.length) {
+        return false;
+      }
+
+      const currentPoem = state.poems[currentIndex];
+      const targetPoem = state.poems[targetIndex];
+      const currentOrder = Number(currentPoem.display_order) || 0;
+      const targetOrder = Number(targetPoem.display_order) || 0;
+
+      const { error: firstError } = await db
+        .from("brajesh_poems")
+        .update({ display_order: targetOrder })
+        .eq("id", currentPoem.id);
+
+      if (firstError) {
+        throw firstError;
+      }
+
+      const { error: secondError } = await db
+        .from("brajesh_poems")
+        .update({ display_order: currentOrder })
+        .eq("id", targetPoem.id);
+
+      if (secondError) {
+        await db.from("brajesh_poems").update({ display_order: currentOrder }).eq("id", currentPoem.id);
+        throw secondError;
+      }
+
+      return true;
+    }
+
     elements.loginForm.addEventListener("submit", async (event) => {
       event.preventDefault();
       const form = event.currentTarget;
-      const password = String(new FormData(event.currentTarget).get("password") || "");
+      const email = String(new FormData(form).get("email") || "");
 
       setLoginBusy(true);
-      setStatus("Signing in.");
+      setStatus("Sending magic link.");
 
       try {
-        const { data, error } = await db.rpc("brajesh_admin_login", {
-          admin_password: password,
-        });
-
-        if (error) throw error;
-
-        const session = getLoginSession(data);
-        state.token = session.token;
-        localStorage.setItem(TOKEN_STORAGE, state.token);
+        const normalizedEmail = await sendBrajeshMagicLink(db, email, "/admin/");
         form.reset();
-        setStatus("Opening admin.");
-        window.location.reload();
+        setStatus(`Check ${normalizedEmail} for your sign-in link.`, "ok");
       } catch (error) {
-        localStorage.removeItem(TOKEN_STORAGE);
-        state.token = "";
-        setStatus(error.message || "Could not sign in.", "error");
+        setStatus(error.message || "Could not send magic link.", "error");
+      } finally {
         setLoginBusy(false);
       }
     });
 
+    elements.loginLogoutButton.addEventListener("click", async () => {
+      await handleSignOut("Signed out. You can request a new magic link with a different email.");
+    });
+
     elements.logoutButton.addEventListener("click", async () => {
-      if (state.token) {
-        await db.rpc("brajesh_admin_logout", { admin_token: state.token });
-      }
-      localStorage.removeItem(TOKEN_STORAGE);
-      state.token = "";
-      state.poems = [];
-      state.comments = new Map();
-      showLogin();
-      setStatus("Signed out.", "ok");
+      await handleSignOut();
     });
 
     elements.newPoemForm.addEventListener("submit", async (event) => {
@@ -791,20 +940,21 @@
       setStatus("Adding poem.");
 
       try {
-        const { data: poemId, error } = await db.rpc("brajesh_admin_create_poem", {
-          admin_token: state.token,
-          poem_title: String(data.get("title") || "").trim(),
-          poem_slug: String(data.get("slug") || "").trim(),
-          poem_body: String(data.get("body") || "").trim(),
-          poem_published: data.get("published") === "on",
-        });
+        const payload = buildPoemPayload(data, getNextDisplayOrder());
+        const { data: insertedPoem, error } = await db
+          .from("brajesh_poems")
+          .insert(payload)
+          .select("id")
+          .single();
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
 
         form.reset();
         form.elements.published.checked = true;
-        await loadAdminData();
-        highlightPoem(poemId);
+        await loadAdminData({ silent: true });
+        highlightPoem(insertedPoem?.id);
         setStatus("Poem added.", "ok");
       } catch (error) {
         setStatus(error.message || "Could not add poem.", "error");
@@ -842,18 +992,17 @@
       setPoemFormStatus(form, "");
 
       try {
-        const { error } = await db.rpc("brajesh_admin_update_poem", {
-          admin_token: state.token,
-          target_poem_id: poemId,
-          poem_title: String(data.get("title") || "").trim(),
-          poem_slug: String(data.get("slug") || "").trim(),
-          poem_body: String(data.get("body") || "").trim(),
-          poem_published: data.get("published") === "on",
-        });
+        const payload = buildPoemPayload(data);
+        const { error } = await db
+          .from("brajesh_poems")
+          .update(payload)
+          .eq("id", poemId);
 
-        if (error) throw error;
+        if (error) {
+          throw error;
+        }
 
-        await loadAdminData();
+        await loadAdminData({ silent: true });
         markPoemSaved(poemId);
         setStatus("Poem saved.", "ok");
       } catch (error) {
@@ -872,64 +1021,64 @@
       const action = target.dataset.action;
 
       if (action === "move-up" || action === "move-down") {
-        const poemId = event.target.closest("[data-poem-id]")?.dataset.poemId;
+        const poemId = target.closest("[data-poem-id]")?.dataset.poemId;
         const moveDirection = action === "move-up" ? "up" : "down";
 
-        const { data, error } = await db.rpc("brajesh_admin_move_poem", {
-          admin_token: state.token,
-          target_poem_id: poemId,
-          move_direction: moveDirection,
-        });
-
-        if (error) {
-          setStatus(error.message, "error");
-          return;
+        try {
+          const moved = await movePoem(poemId, moveDirection);
+          await loadAdminData({ silent: true });
+          setStatus(moved ? "Poem moved." : "Poem is already at the edge.", moved ? "ok" : "");
+        } catch (error) {
+          setStatus(error.message || "Could not move poem.", "error");
         }
-
-        await loadAdminData();
-        setStatus(data ? "Poem moved." : "Poem is already at the edge.", data ? "ok" : "");
       }
 
       if (action === "delete-poem") {
-        const poemElement = event.target.closest("[data-poem-id]");
+        const poemElement = target.closest("[data-poem-id]");
         const poemId = poemElement?.dataset.poemId;
         const title = poemElement?.querySelector("h3")?.textContent || "this poem";
         if (!window.confirm(`Delete "${title}"?`)) return;
 
-        const { error } = await db.rpc("brajesh_admin_delete_poem", {
-          admin_token: state.token,
-          target_poem_id: poemId,
-        });
+        try {
+          const { error } = await db.from("brajesh_poems").delete().eq("id", poemId);
+          if (error) {
+            throw error;
+          }
 
-        if (error) {
-          setStatus(error.message, "error");
-          return;
+          await loadAdminData({ silent: true });
+          setStatus("Poem deleted.", "ok");
+        } catch (error) {
+          setStatus(error.message || "Could not delete poem.", "error");
         }
-
-        await loadAdminData();
-        setStatus("Poem deleted.", "ok");
       }
 
       if (action === "delete-comment") {
-        const commentId = event.target.closest("[data-comment-id]")?.dataset.commentId;
+        const commentId = target.closest("[data-comment-id]")?.dataset.commentId;
         if (!commentId || !window.confirm("Delete this comment?")) return;
 
-        const { error } = await db.rpc("brajesh_admin_delete_comment", {
-          admin_token: state.token,
-          target_comment_id: commentId,
-        });
+        try {
+          const { error } = await db.from("brajesh_comments").delete().eq("id", commentId);
+          if (error) {
+            throw error;
+          }
 
-        if (error) {
-          setStatus(error.message, "error");
-          return;
+          await loadAdminData({ silent: true });
+          setStatus("Comment deleted.", "ok");
+        } catch (error) {
+          setStatus(error.message || "Could not delete comment.", "error");
         }
-
-        await loadAdminData();
-        setStatus("Comment deleted.", "ok");
       }
     });
 
-    loadAdminData();
+    db.auth.onAuthStateChange(() => {
+      clearAuthHash();
+      loadAdminData({ silent: true });
+    });
+
+    updateIdentityUI();
+    loadAdminData().finally(() => {
+      clearAuthHash();
+    });
   </script>
 </body>
 </html>
