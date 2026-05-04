@@ -50,6 +50,7 @@ const elements = {
   displayMode: document.querySelector("#displayMode"),
   displayBody: document.querySelector("#displayBody"),
   displayStage: document.querySelector("#displayStage"),
+  displayFrame: document.querySelector("#displayFrame"),
   displayText: document.querySelector("#displayText"),
   displayAnnouncer: document.querySelector("#displayAnnouncer"),
   startDisplay: document.querySelector("#startDisplay"),
@@ -108,6 +109,36 @@ function createDisplayMeasure(sourceElement, availableWidth) {
   measure.style.userSelect = "none";
   document.body.appendChild(measure);
   return measure;
+}
+
+function getRenderedTextMetrics(textElement, frameElement) {
+  const frameRect = frameElement.getBoundingClientRect();
+  const range = document.createRange();
+  range.selectNodeContents(textElement);
+  const rects = Array.from(range.getClientRects()).filter((rect) => rect.width > 0 && rect.height > 0);
+
+  if (!rects.length) {
+    return null;
+  }
+
+  let minLeft = Number.POSITIVE_INFINITY;
+  let maxRight = Number.NEGATIVE_INFINITY;
+  let minTop = Number.POSITIVE_INFINITY;
+  let maxBottom = Number.NEGATIVE_INFINITY;
+
+  rects.forEach((rect) => {
+    minLeft = Math.min(minLeft, rect.left);
+    maxRight = Math.max(maxRight, rect.right);
+    minTop = Math.min(minTop, rect.top);
+    maxBottom = Math.max(maxBottom, rect.bottom);
+  });
+
+  return {
+    leftOverflow: Math.max(0, frameRect.left - minLeft),
+    rightOverflow: Math.max(0, maxRight - frameRect.right),
+    renderedHeight: maxBottom - minTop,
+    frameHeight: frameRect.height,
+  };
 }
 
 function setPageStatus(text, tone = "") {
@@ -719,14 +750,18 @@ function getNextAffirmation() {
 
 function fitDisplayText() {
   const stage = elements.displayStage;
+  const frame = elements.displayFrame;
   const text = elements.displayText;
 
-  let fontSize = Math.min(window.innerWidth * 0.13, window.innerHeight * 0.18, 180);
+  if (!stage || !frame || !text) {
+    return;
+  }
+
+  let fontSize = Math.min(frame.clientWidth * 0.42, stage.clientHeight * 0.24, 180);
   const minSize = 26;
-  const horizontalSafety = Math.max(18, stage.clientWidth * 0.06);
-  const verticalSafety = Math.max(20, stage.clientHeight * 0.04);
-  const availableWidth = Math.max(120, stage.clientWidth - horizontalSafety * 2);
-  const availableHeight = Math.max(120, stage.clientHeight - verticalSafety * 2);
+  const verticalSafety = Math.max(18, stage.clientHeight * 0.035);
+  const availableWidth = Math.max(120, frame.clientWidth);
+  const availableHeight = Math.max(120, frame.clientHeight - verticalSafety * 2);
   const measure = createDisplayMeasure(text, availableWidth);
 
   try {
@@ -745,9 +780,23 @@ function fitDisplayText() {
     measure.remove();
   }
 
+  const edgeTolerance = 2;
+
   text.style.fontSize = `${fontSize}px`;
-  if (text.scrollWidth > text.clientWidth + 1 && fontSize > minSize) {
-    fontSize = Math.max(minSize, fontSize - 4);
+  while (fontSize > minSize) {
+    const metrics = getRenderedTextMetrics(text, frame);
+    const exceedsWidth = metrics
+      ? metrics.leftOverflow > edgeTolerance || metrics.rightOverflow > edgeTolerance
+      : false;
+    const exceedsHeight = metrics
+      ? metrics.renderedHeight > metrics.frameHeight - verticalSafety
+      : false;
+
+    if (!exceedsWidth && !exceedsHeight) {
+      break;
+    }
+
+    fontSize = Math.max(minSize, fontSize - 2);
     text.style.fontSize = `${fontSize}px`;
   }
 }
@@ -771,6 +820,13 @@ function openDisplayMode(startItem = null) {
   }
 
   elements.displayBody.focus();
+  if (document.fonts?.ready) {
+    void document.fonts.ready.then(() => {
+      if (!elements.displayMode.hidden) {
+        scheduleDisplayFit();
+      }
+    });
+  }
 }
 
 function closeDisplayMode() {

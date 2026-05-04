@@ -36,6 +36,7 @@
 
     html {
       scroll-behavior: smooth;
+      -webkit-text-size-adjust: 100%;
     }
 
     body {
@@ -597,14 +598,27 @@
       display: grid;
       place-items: center;
       overflow: hidden;
+      padding:
+        max(8px, calc(var(--safe-top) * 0.2))
+        calc(var(--safe-right) + 8px)
+        max(8px, calc(var(--safe-bottom) * 0.2))
+        calc(var(--safe-left) + 8px);
     }
 
     .display-stage {
-      width: min(1200px, 100%);
+      width: 100%;
       height: 100%;
       display: grid;
       place-items: center;
-      padding: clamp(20px, 4vw, 44px);
+    }
+
+    .display-frame {
+      width: min(1040px, calc(100vw - var(--safe-left) - var(--safe-right) - 56px));
+      max-width: 100%;
+      height: 100%;
+      display: grid;
+      place-items: center;
+      margin: 0 auto;
     }
 
     .display-text {
@@ -618,6 +632,7 @@
       text-align: center;
       overflow-wrap: break-word;
       word-break: normal;
+      hyphens: none;
       user-select: none;
       white-space: pre-line;
     }
@@ -702,6 +717,10 @@
       .display-bar,
       .display-footer {
         gap: 8px;
+      }
+
+      .display-frame {
+        width: calc(100vw - var(--safe-left) - var(--safe-right) - 48px);
       }
 
       .display-footer .pill-row {
@@ -860,7 +879,9 @@
 
     <div class="display-body" id="displayBody" tabindex="0" aria-label="Affirmation display area">
       <div class="display-stage" id="displayStage">
-        <p class="display-text" id="displayText">I trust my own timing and move through life with calm conviction.</p>
+        <div class="display-frame" id="displayFrame">
+          <p class="display-text" id="displayText">I trust my own timing and move through life with calm conviction.</p>
+        </div>
       </div>
       <p class="screen-reader" aria-live="polite" id="displayAnnouncer"></p>
     </div>
