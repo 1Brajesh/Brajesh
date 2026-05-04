@@ -81,16 +81,33 @@ function scheduleDisplayFit() {
   });
 }
 
-function getRenderedTextRects(element) {
-  const range = document.createRange();
-  range.selectNodeContents(element);
-  const rects = Array.from(range.getClientRects()).filter((rect) => rect.width > 0 && rect.height > 0);
-
-  if (typeof range.detach === "function") {
-    range.detach();
-  }
-
-  return rects.length ? rects : [element.getBoundingClientRect()];
+function createDisplayMeasure(sourceElement, availableWidth) {
+  const styles = window.getComputedStyle(sourceElement);
+  const measure = document.createElement("div");
+  measure.textContent = sourceElement.textContent || "";
+  measure.style.position = "fixed";
+  measure.style.left = "-100000px";
+  measure.style.top = "0";
+  measure.style.visibility = "hidden";
+  measure.style.pointerEvents = "none";
+  measure.style.boxSizing = "border-box";
+  measure.style.width = `${availableWidth}px`;
+  measure.style.maxWidth = `${availableWidth}px`;
+  measure.style.margin = "0";
+  measure.style.padding = "0";
+  measure.style.border = "0";
+  measure.style.fontFamily = styles.fontFamily;
+  measure.style.fontWeight = styles.fontWeight;
+  measure.style.fontStyle = styles.fontStyle;
+  measure.style.lineHeight = styles.lineHeight;
+  measure.style.letterSpacing = styles.letterSpacing;
+  measure.style.textAlign = styles.textAlign;
+  measure.style.whiteSpace = styles.whiteSpace;
+  measure.style.wordBreak = styles.wordBreak;
+  measure.style.overflowWrap = styles.overflowWrap;
+  measure.style.userSelect = "none";
+  document.body.appendChild(measure);
+  return measure;
 }
 
 function setPageStatus(text, tone = "") {
@@ -706,24 +723,31 @@ function fitDisplayText() {
 
   let fontSize = Math.min(window.innerWidth * 0.13, window.innerHeight * 0.18, 180);
   const minSize = 26;
-  const horizontalSafety = Math.max(14, stage.clientWidth * 0.04);
+  const horizontalSafety = Math.max(18, stage.clientWidth * 0.06);
   const verticalSafety = Math.max(20, stage.clientHeight * 0.04);
-  text.style.fontSize = `${fontSize}px`;
+  const availableWidth = Math.max(120, stage.clientWidth - horizontalSafety * 2);
+  const availableHeight = Math.max(120, stage.clientHeight - verticalSafety * 2);
+  const measure = createDisplayMeasure(text, availableWidth);
 
-  while (fontSize > minSize) {
-    const stageRect = stage.getBoundingClientRect();
-    const textRect = text.getBoundingClientRect();
-    const lineRects = getRenderedTextRects(text);
-    const exceedsWidth = lineRects.some((rect) =>
-      rect.left < stageRect.left + horizontalSafety || rect.right > stageRect.right - horizontalSafety
-    );
-    const exceedsHeight = textRect.height > stageRect.height - verticalSafety;
+  try {
+    while (fontSize > minSize) {
+      measure.style.fontSize = `${fontSize}px`;
+      const exceedsWidth = measure.scrollWidth > availableWidth + 1;
+      const exceedsHeight = measure.scrollHeight > availableHeight + 1;
 
-    if (!exceedsWidth && !exceedsHeight) {
-      break;
+      if (!exceedsWidth && !exceedsHeight) {
+        break;
+      }
+
+      fontSize -= 2;
     }
+  } finally {
+    measure.remove();
+  }
 
-    fontSize -= 2;
+  text.style.fontSize = `${fontSize}px`;
+  if (text.scrollWidth > text.clientWidth + 1 && fontSize > minSize) {
+    fontSize = Math.max(minSize, fontSize - 4);
     text.style.fontSize = `${fontSize}px`;
   }
 }
