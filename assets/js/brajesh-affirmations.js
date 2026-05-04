@@ -58,6 +58,7 @@ const elements = {
 };
 
 function setStatusElement(element, text, tone = "") {
+  if (!element) return;
   element.textContent = text;
   element.dataset.tone = tone;
 }
@@ -217,7 +218,9 @@ function renderThemePills(target, currentTheme, onSelect) {
 function showLogin() {
   elements.loginPanel.hidden = false;
   elements.appShell.hidden = true;
-  elements.startDisplayTop.hidden = true;
+  if (elements.startDisplayTop) {
+    elements.startDisplayTop.hidden = true;
+  }
   elements.logoutButton.hidden = !state.user;
   closeDisplayMode();
 }
@@ -225,7 +228,9 @@ function showLogin() {
 function showApp() {
   elements.loginPanel.hidden = true;
   elements.appShell.hidden = false;
-  elements.startDisplayTop.hidden = false;
+  if (elements.startDisplayTop) {
+    elements.startDisplayTop.hidden = false;
+  }
   elements.logoutButton.hidden = false;
 }
 
@@ -322,11 +327,17 @@ function renderLibrary() {
   const rows = getFilteredAffirmations();
 
   elements.selectedThemeBadge.textContent = `Selected: ${getThemeLabel(state.selectedTheme)}`;
-  elements.previewThemeBadge.textContent = `Theme: ${getThemeLabel(state.selectedTheme)}`;
   elements.themeSummary.textContent = getThemeSummary();
   elements.libraryThemeMessage.textContent = `Filter: ${getThemeLabel(state.selectedTheme)}`;
   elements.libraryCountBadge.textContent = `${rows.length} ${rows.length === 1 ? "item" : "items"}`;
-  elements.previewQuote.textContent = (rows[0] || state.affirmations[0] || {}).body || "No affirmations yet.";
+
+  if (elements.previewThemeBadge) {
+    elements.previewThemeBadge.textContent = `Theme: ${getThemeLabel(state.selectedTheme)}`;
+  }
+
+  if (elements.previewQuote) {
+    elements.previewQuote.textContent = (rows[0] || state.affirmations[0] || {}).body || "No affirmations yet.";
+  }
 
   if (!rows.length) {
     elements.affirmationList.innerHTML = '<div class="empty">No affirmations in this theme yet.</div>';
@@ -890,7 +901,9 @@ function startDisplayFromCurrentTheme() {
 }
 
 elements.startDisplay.addEventListener("click", startDisplayFromCurrentTheme);
-elements.startDisplayTop.addEventListener("click", startDisplayFromCurrentTheme);
+if (elements.startDisplayTop) {
+  elements.startDisplayTop.addEventListener("click", startDisplayFromCurrentTheme);
+}
 elements.exitDisplay.addEventListener("click", closeDisplayMode);
 
 elements.displayBody.addEventListener("click", (event) => {
