@@ -517,6 +517,8 @@
     };
 
     const db = createBrajeshClient();
+    let adminLoadPromise = null;
+    let adminReloadQueued = false;
 
     function setStatus(text, tone = "") {
       elements.status.textContent = text;
@@ -770,6 +772,25 @@
       }
     }
 
+    async function requestAdminLoad(options = {}) {
+      if (adminLoadPromise) {
+        adminReloadQueued = true;
+        return adminLoadPromise;
+      }
+
+      adminLoadPromise = loadAdminData(options)
+        .finally(async () => {
+          adminLoadPromise = null;
+
+          if (adminReloadQueued) {
+            adminReloadQueued = false;
+            await requestAdminLoad({ silent: true });
+          }
+        });
+
+      return adminLoadPromise;
+    }
+
     function render() {
       elements.poemList.innerHTML = state.poems.length
         ? state.poems.map((poem, index) => renderPoem(poem, index)).join("")
@@ -956,7 +977,7 @@
 
         form.reset();
         form.elements.published.checked = true;
-        await loadAdminData({ silent: true });
+        await requestAdminLoad({ silent: true });
         highlightPoem(insertedPoem?.id);
         setStatus("Poem added.", "ok");
       } catch (error) {
@@ -1005,7 +1026,7 @@
           throw error;
         }
 
-        await loadAdminData({ silent: true });
+        await requestAdminLoad({ silent: true });
         markPoemSaved(poemId);
         setStatus("Poem saved.", "ok");
       } catch (error) {
@@ -1029,7 +1050,7 @@
 
         try {
           const moved = await movePoem(poemId, moveDirection);
-          await loadAdminData({ silent: true });
+          await requestAdminLoad({ silent: true });
           setStatus(moved ? "Poem moved." : "Poem is already at the edge.", moved ? "ok" : "");
         } catch (error) {
           setStatus(error.message || "Could not move poem.", "error");
@@ -1048,7 +1069,7 @@
             throw error;
           }
 
-          await loadAdminData({ silent: true });
+          await requestAdminLoad({ silent: true });
           setStatus("Poem deleted.", "ok");
         } catch (error) {
           setStatus(error.message || "Could not delete poem.", "error");
@@ -1065,7 +1086,7 @@
             throw error;
           }
 
-          await loadAdminData({ silent: true });
+          await requestAdminLoad({ silent: true });
           setStatus("Comment deleted.", "ok");
         } catch (error) {
           setStatus(error.message || "Could not delete comment.", "error");
@@ -1073,13 +1094,17 @@
       }
     });
 
-    db.auth.onAuthStateChange(() => {
+    db.auth.onAuthStateChange((event) => {
       clearAuthHash();
-      loadAdminData({ silent: true });
+      if (event === "INITIAL_SESSION") {
+        return;
+      }
+
+      void requestAdminLoad({ silent: true });
     });
 
     updateIdentityUI();
-    loadAdminData().finally(() => {
+    requestAdminLoad().finally(() => {
       clearAuthHash();
     });
   </script>

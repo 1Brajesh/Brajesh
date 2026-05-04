@@ -15,6 +15,8 @@ const state = {
   displayQueue: [],
   currentDisplayId: null,
 };
+let pageLoadPromise = null;
+let pageReloadQueued = false;
 
 const elements = {
   pageStatus: document.querySelector("#pageStatus"),
@@ -420,6 +422,25 @@ async function loadPage(options = {}) {
     showLogin();
     setPageStatus(error.message || "Could not load affirmations.", "error");
   }
+}
+
+async function requestPageLoad(options = {}) {
+  if (pageLoadPromise) {
+    pageReloadQueued = true;
+    return pageLoadPromise;
+  }
+
+  pageLoadPromise = loadPage(options)
+    .finally(async () => {
+      pageLoadPromise = null;
+
+      if (pageReloadQueued) {
+        pageReloadQueued = false;
+        await requestPageLoad({ silent: true });
+      }
+    });
+
+  return pageLoadPromise;
 }
 
 function escapeCSVField(value) {
@@ -897,15 +918,19 @@ window.addEventListener("resize", () => {
   }
 });
 
-db.auth.onAuthStateChange(() => {
+db.auth.onAuthStateChange((event) => {
+  if (event === "INITIAL_SESSION") {
+    return;
+  }
+
   clearAuthHash();
-  loadPage({ silent: true });
+  void requestPageLoad({ silent: true });
 });
 
 updateIdentityUI();
 resetEditor({ keepStatus: true });
 setEditorStatus("Add a new affirmation or import a CSV.");
 setCSVStatus("CSV format: first column = affirmation, second column = theme.");
-loadPage().finally(() => {
+requestPageLoad().finally(() => {
   clearAuthHash();
 });
