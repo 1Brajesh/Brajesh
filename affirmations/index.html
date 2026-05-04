@@ -180,12 +180,15 @@
     .panel {
       position: relative;
       overflow: hidden;
-      border: 1px solid var(--plate-line, var(--line));
+      border: 2px solid var(--plate-line, var(--line));
       border-radius: var(--radius);
       background:
         linear-gradient(180deg, var(--plate-wash, rgba(255, 255, 255, 0.02)), rgba(0, 0, 0, 0)),
         var(--panel);
-      box-shadow: var(--shadow);
+      box-shadow:
+        0 0 0 1px var(--plate-edge, transparent),
+        0 0 28px var(--plate-shadow, transparent),
+        var(--shadow);
       backdrop-filter: blur(24px);
     }
 
@@ -200,19 +203,25 @@
     }
 
     .panel-display {
-      --plate-line: rgba(244, 204, 138, 0.22);
+      --plate-line: #f7c86f;
+      --plate-edge: rgba(247, 200, 111, 0.42);
+      --plate-shadow: rgba(247, 200, 111, 0.18);
       --plate-wash: rgba(244, 204, 138, 0.08);
       --plate-glow: rgba(244, 204, 138, 0.16);
     }
 
     .panel-editor {
-      --plate-line: rgba(124, 169, 255, 0.22);
+      --plate-line: #6eb7ff;
+      --plate-edge: rgba(110, 183, 255, 0.42);
+      --plate-shadow: rgba(110, 183, 255, 0.2);
       --plate-wash: rgba(84, 128, 214, 0.08);
       --plate-glow: rgba(124, 169, 255, 0.18);
     }
 
     .panel-library {
-      --plate-line: rgba(130, 208, 173, 0.22);
+      --plate-line: #7ee2a8;
+      --plate-edge: rgba(126, 226, 168, 0.4);
+      --plate-shadow: rgba(126, 226, 168, 0.18);
       --plate-wash: rgba(78, 142, 114, 0.08);
       --plate-glow: rgba(130, 208, 173, 0.16);
     }
