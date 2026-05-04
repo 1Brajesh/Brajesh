@@ -81,6 +81,18 @@ function scheduleDisplayFit() {
   });
 }
 
+function getRenderedTextRects(element) {
+  const range = document.createRange();
+  range.selectNodeContents(element);
+  const rects = Array.from(range.getClientRects()).filter((rect) => rect.width > 0 && rect.height > 0);
+
+  if (typeof range.detach === "function") {
+    range.detach();
+  }
+
+  return rects.length ? rects : [element.getBoundingClientRect()];
+}
+
 function setPageStatus(text, tone = "") {
   setStatusElement(elements.pageStatus, text, tone);
 }
@@ -694,12 +706,23 @@ function fitDisplayText() {
 
   let fontSize = Math.min(window.innerWidth * 0.13, window.innerHeight * 0.18, 180);
   const minSize = 26;
+  const horizontalSafety = Math.max(14, stage.clientWidth * 0.04);
+  const verticalSafety = Math.max(20, stage.clientHeight * 0.04);
   text.style.fontSize = `${fontSize}px`;
 
-  while (
-    fontSize > minSize &&
-    (text.scrollWidth > stage.clientWidth - 8 || text.scrollHeight > stage.clientHeight - 8)
-  ) {
+  while (fontSize > minSize) {
+    const stageRect = stage.getBoundingClientRect();
+    const textRect = text.getBoundingClientRect();
+    const lineRects = getRenderedTextRects(text);
+    const exceedsWidth = lineRects.some((rect) =>
+      rect.left < stageRect.left + horizontalSafety || rect.right > stageRect.right - horizontalSafety
+    );
+    const exceedsHeight = textRect.height > stageRect.height - verticalSafety;
+
+    if (!exceedsWidth && !exceedsHeight) {
+      break;
+    }
+
     fontSize -= 2;
     text.style.fontSize = `${fontSize}px`;
   }
