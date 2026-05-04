@@ -600,13 +600,15 @@
 
     .skip-display-button {
       display: none;
+      align-items: center;
+      justify-content: center;
       min-width: 46px;
       padding: 0 14px;
     }
 
     .skip-display-button svg {
       display: block;
-      width: 18px;
+      width: 20px;
       height: 18px;
       fill: none;
       stroke: currentColor;
@@ -923,8 +925,9 @@
       <div class="display-actions">
         <button class="ghost-button skip-display-button" type="button" id="skipDisplay" hidden aria-label="Skip to next long affirmation" title="Skip to next long affirmation">
           <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
-            <path d="M4 4l6 6-6 6"></path>
-            <path d="M10 4l6 6-6 6"></path>
+            <path d="M3 4l6.4 6L3 16z"></path>
+            <path d="M10.2 4l6.4 6-6.4 6z"></path>
+            <path d="M17 4v12"></path>
           </svg>
         </button>
         <button class="ghost-button" type="button" id="exitDisplay">Exit</button>
