@@ -6,6 +6,7 @@ import {
 } from "./brajesh-auth.js";
 
 const db = createBrajeshClient();
+const BUILTIN_THEMES = ["long"];
 
 const state = {
   user: null,
@@ -14,6 +15,7 @@ const state = {
   editingId: null,
   displayQueue: [],
   currentDisplayId: null,
+  displaySequence: null,
 };
 let pageLoadPromise = null;
 let pageReloadQueued = false;
@@ -53,6 +55,9 @@ const elements = {
   displayFrame: document.querySelector("#displayFrame"),
   displayText: document.querySelector("#displayText"),
   displayAnnouncer: document.querySelector("#displayAnnouncer"),
+  displayFooter: document.querySelector("#displayFooter"),
+  displayProgressFill: document.querySelector("#displayProgressFill"),
+  displayProgressLabel: document.querySelector("#displayProgressLabel"),
   startDisplay: document.querySelector("#startDisplay"),
   exitDisplay: document.querySelector("#exitDisplay"),
 };
@@ -211,7 +216,7 @@ function getAffirmationKeySet() {
 }
 
 function getThemes() {
-  const themes = [...new Set(state.affirmations.map((item) => item.theme))].sort();
+  const themes = [...new Set([...BUILTIN_THEMES, ...state.affirmations.map((item) => item.theme)])].sort();
   return ["random", ...themes];
 }
 
@@ -223,9 +228,23 @@ function getFilteredAffirmations(theme = state.selectedTheme) {
   return state.affirmations.filter((item) => item.theme === theme);
 }
 
+function getDisplayAffirmations(theme = state.selectedTheme) {
+  const rows = getFilteredAffirmations(theme);
+
+  if (theme === "random") {
+    return rows.filter((item) => item.theme !== "long");
+  }
+
+  return rows;
+}
+
 function getThemeSummary(theme = state.selectedTheme) {
   if (theme === "random") {
-    return "Showing affirmations from every theme.";
+    return "Showing affirmations from every short theme. Long stays separate.";
+  }
+
+  if (theme === "long") {
+    return "Showing long affirmations one line at a time with progress.";
   }
 
   return `Showing affirmations tagged “${titleCase(theme)}”.`;
@@ -254,9 +273,22 @@ function shuffle(list) {
   return rows;
 }
 
+function isLongAffirmation(item) {
+  return item?.theme === "long";
+}
+
+function getLongAffirmationSteps(body) {
+  const steps = cleanAffirmationBody(body)
+    .split("\n")
+    .map((line) => line.trim())
+    .filter(Boolean);
+
+  return steps.length ? steps : [""];
+}
+
 function renderThemeOptions() {
   const themes = getThemes().filter((theme) => theme !== "random");
-  const availableThemes = themes.length ? themes : ["personal"];
+  const availableThemes = [...new Set(["personal", ...themes])];
   const currentValue = elements.themeSelect.value;
 
   elements.themeSelect.innerHTML = availableThemes.map((theme) => `
@@ -395,6 +427,7 @@ function syncPageStateAfterLoad() {
 
   if (state.currentDisplayId && !getAffirmationById(state.currentDisplayId)) {
     state.currentDisplayId = null;
+    state.displaySequence = null;
   }
 
   renderControls();
@@ -449,6 +482,7 @@ function renderControls() {
   renderThemePills(elements.displayThemeBar, state.selectedTheme, (theme) => {
     state.selectedTheme = theme;
     state.displayQueue = [];
+    state.displaySequence = null;
     renderControls();
     renderLibrary();
     showNextAffirmation();
@@ -717,22 +751,69 @@ function exportCSV() {
   setCSVStatus(`Exported ${rows.length} affirmation${rows.length === 1 ? "" : "s"} to affirmations-export.csv.`, "ok");
 }
 
+function hideDisplayProgress() {
+  elements.displayFooter.hidden = true;
+  elements.displayProgressFill.style.width = "0%";
+  elements.displayProgressLabel.textContent = "";
+}
+
+function updateDisplayProgress(stepIndex, totalSteps) {
+  if (totalSteps <= 1) {
+    hideDisplayProgress();
+    return;
+  }
+
+  const progress = ((stepIndex + 1) / totalSteps) * 100;
+  elements.displayFooter.hidden = false;
+  elements.displayProgressFill.style.width = `${progress}%`;
+  elements.displayProgressLabel.textContent = `Line ${stepIndex + 1} of ${totalSteps}.`;
+}
+
+function renderLongSequenceStep(item) {
+  const sequence = state.displaySequence;
+
+  if (!item || !sequence) {
+    return;
+  }
+
+  const line = sequence.steps[sequence.index] || "";
+  elements.displayText.textContent = line;
+  elements.displayAnnouncer.textContent = `Line ${sequence.index + 1} of ${sequence.steps.length}. ${line}`;
+  updateDisplayProgress(sequence.index, sequence.steps.length);
+  scheduleDisplayFit();
+}
+
 function renderDisplayItem(item) {
   if (!item) {
+    state.displaySequence = null;
     elements.displayText.textContent = "No affirmations in this theme yet.";
     elements.displayAnnouncer.textContent = "No affirmations available.";
+    hideDisplayProgress();
     scheduleDisplayFit();
     return;
   }
 
   state.currentDisplayId = item.id;
+
+  if (isLongAffirmation(item)) {
+    state.displaySequence = {
+      itemId: item.id,
+      steps: getLongAffirmationSteps(item.body),
+      index: 0,
+    };
+    renderLongSequenceStep(item);
+    return;
+  }
+
+  state.displaySequence = null;
   elements.displayText.textContent = item.body;
   elements.displayAnnouncer.textContent = item.body;
+  hideDisplayProgress();
   scheduleDisplayFit();
 }
 
 function buildDisplayQueue() {
-  const rows = getFilteredAffirmations().filter((item) => item.id !== state.currentDisplayId);
+  const rows = getDisplayAffirmations().filter((item) => item.id !== state.currentDisplayId);
   state.displayQueue = shuffle(rows);
 }
 
@@ -802,6 +883,13 @@ function fitDisplayText() {
 }
 
 function showNextAffirmation() {
+  if (state.displaySequence && state.displaySequence.index < state.displaySequence.steps.length - 1) {
+    state.displaySequence.index += 1;
+    renderLongSequenceStep(getAffirmationById(state.displaySequence.itemId));
+    return;
+  }
+
+  state.displaySequence = null;
   renderDisplayItem(getNextAffirmation());
 }
 
@@ -809,10 +897,11 @@ function openDisplayMode(startItem = null) {
   elements.displayMode.hidden = false;
   document.body.style.overflow = "hidden";
   state.displayQueue = [];
+  state.displaySequence = null;
 
   if (startItem) {
     state.displayQueue = shuffle(
-      getFilteredAffirmations().filter((item) => item.id !== startItem.id)
+      getDisplayAffirmations(startItem.theme).filter((item) => item.id !== startItem.id)
     );
     renderDisplayItem(startItem);
   } else {
@@ -832,6 +921,8 @@ function openDisplayMode(startItem = null) {
 function closeDisplayMode() {
   elements.displayMode.hidden = true;
   document.body.style.overflow = "";
+  state.displaySequence = null;
+  hideDisplayProgress();
 }
 
 function clearAuthHash() {
@@ -863,6 +954,7 @@ async function handleSignOut(successMessage = "Signed out.") {
   state.affirmations = [];
   state.displayQueue = [];
   state.currentDisplayId = null;
+  state.displaySequence = null;
   resetEditor();
   updateIdentityUI();
   showLogin();

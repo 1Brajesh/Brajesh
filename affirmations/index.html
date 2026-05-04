@@ -638,13 +638,27 @@
     }
 
     .display-footer {
-      color: rgba(255, 255, 255, 0.58);
-      font-size: 0.9rem;
+      justify-content: center;
       margin-top: 12px;
+      min-height: 10px;
     }
 
-    .display-footer .pill-row {
-      justify-content: flex-end;
+    .display-progress {
+      width: min(420px, 100%);
+      height: 6px;
+      border-radius: 999px;
+      overflow: hidden;
+      background: rgba(255, 255, 255, 0.12);
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+    }
+
+    .display-progress-fill {
+      display: block;
+      width: 0;
+      height: 100%;
+      border-radius: inherit;
+      background: linear-gradient(90deg, rgba(244, 204, 138, 0.9), rgba(255, 243, 214, 1));
+      transition: width 180ms ease;
     }
 
     .empty {
@@ -688,8 +702,7 @@
 
       .top-actions,
       .launch-row,
-      .list-meta,
-      .display-footer {
+      .list-meta {
         align-items: stretch;
       }
 
@@ -723,8 +736,8 @@
         width: calc(100vw - var(--safe-left) - var(--safe-right) - 48px);
       }
 
-      .display-footer .pill-row {
-        justify-content: flex-start;
+      .display-progress {
+        width: 100%;
       }
     }
   </style>
@@ -777,7 +790,7 @@
           <div class="section-head">
             <div>
               <h2>Display Setup</h2>
-              <p>Choose the theme to play in fullscreen mode. Random means all themes together.</p>
+              <p>Choose the theme to play in fullscreen mode. Random plays the short themes together. Long stays separate and reveals one line at a time.</p>
             </div>
             <span class="badge" id="selectedThemeBadge">Selected: Random</span>
           </div>
@@ -823,7 +836,7 @@
             </div>
 
             <div class="launch-row">
-              <p>Reuse an existing theme when you can. Add a new one only when needed.</p>
+              <p>Choose <code>long</code> for multi-line pieces. In display mode, long affirmations reveal one line per tap.</p>
               <span class="button-cluster">
                 <button class="ghost-button" type="button" id="cancelEditButton" hidden>Cancel Edit</button>
                 <button class="primary-button" type="submit" id="saveAffirmationButton">Save Affirmation</button>
@@ -886,7 +899,12 @@
       <p class="screen-reader" aria-live="polite" id="displayAnnouncer"></p>
     </div>
 
-    <div class="display-footer"></div>
+    <div class="display-footer" id="displayFooter" hidden>
+      <div class="display-progress" aria-hidden="true">
+        <span class="display-progress-fill" id="displayProgressFill"></span>
+      </div>
+      <p class="screen-reader" id="displayProgressLabel"></p>
+    </div>
   </section>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
