@@ -180,9 +180,11 @@
     .panel {
       position: relative;
       overflow: hidden;
-      border: 1px solid var(--line);
+      border: 1px solid var(--plate-line, var(--line));
       border-radius: var(--radius);
-      background: var(--panel);
+      background:
+        linear-gradient(180deg, var(--plate-wash, rgba(255, 255, 255, 0.02)), rgba(0, 0, 0, 0)),
+        var(--panel);
       box-shadow: var(--shadow);
       backdrop-filter: blur(24px);
     }
@@ -194,7 +196,40 @@
       pointer-events: none;
       background:
         linear-gradient(120deg, rgba(255, 255, 255, 0.03), transparent 24%, transparent 76%, rgba(255, 255, 255, 0.03)),
-        radial-gradient(circle at 88% 10%, rgba(244, 204, 138, 0.08), transparent 26%);
+        radial-gradient(circle at 88% 10%, var(--plate-glow, rgba(244, 204, 138, 0.08)), transparent 26%);
+    }
+
+    .panel-display {
+      --plate-line: rgba(244, 204, 138, 0.22);
+      --plate-wash: rgba(244, 204, 138, 0.08);
+      --plate-glow: rgba(244, 204, 138, 0.16);
+    }
+
+    .panel-editor {
+      --plate-line: rgba(124, 169, 255, 0.22);
+      --plate-wash: rgba(84, 128, 214, 0.08);
+      --plate-glow: rgba(124, 169, 255, 0.18);
+    }
+
+    .panel-library {
+      --plate-line: rgba(130, 208, 173, 0.22);
+      --plate-wash: rgba(78, 142, 114, 0.08);
+      --plate-glow: rgba(130, 208, 173, 0.16);
+    }
+
+    .panel-display h2,
+    .panel-display .badge {
+      color: #f5ddaf;
+    }
+
+    .panel-editor h2,
+    .panel-editor .badge {
+      color: #d2e0ff;
+    }
+
+    .panel-library h2,
+    .panel-library .badge {
+      color: #d4f0de;
     }
 
     h1,
@@ -694,7 +729,7 @@
     <section id="appShell" hidden>
     <section class="workspace">
       <div class="stack">
-        <section class="panel section">
+        <section class="panel panel-display section">
           <div class="section-head">
             <div>
               <h2>Display Setup</h2>
@@ -711,7 +746,7 @@
           </div>
         </section>
 
-        <section class="panel section">
+        <section class="panel panel-editor section">
           <div class="section-head">
             <div>
               <h2>Add or Edit</h2>
@@ -772,7 +807,7 @@
         </section>
       </div>
 
-      <section class="panel section">
+      <section class="panel panel-library section">
         <div class="section-head">
           <div>
             <h2>Affirmation Library</h2>
