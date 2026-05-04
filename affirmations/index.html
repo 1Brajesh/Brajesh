@@ -599,6 +599,7 @@
     }
 
     .skip-display-button {
+      display: none;
       min-width: 46px;
       padding: 0 14px;
     }
@@ -612,6 +613,12 @@
       stroke-width: 2;
       stroke-linecap: round;
       stroke-linejoin: round;
+    }
+
+    @media (hover: hover) and (pointer: fine) {
+      .skip-display-button {
+        display: inline-flex;
+      }
     }
 
     .display-body {
@@ -756,10 +763,6 @@
       .display-bar,
       .display-footer {
         gap: 8px;
-      }
-
-      .skip-display-button {
-        display: none;
       }
 
       .display-frame {
