@@ -1,5 +1,7 @@
 export const BRAJESH_SUPABASE_URL = "https://pjbpghknzqmwfykbtvzp.supabase.co";
 export const BRAJESH_SUPABASE_KEY = "sb_publishable_c-jEz8WNtOn5etyRxCrKNw_WIU-GBPE";
+const BRAJESH_PROJECT_REF = new URL(BRAJESH_SUPABASE_URL).hostname.split(".")[0];
+const BRAJESH_STORAGE_PREFIX = `sb-${BRAJESH_PROJECT_REF}-`;
 
 export function createBrajeshClient() {
   if (!window.supabase?.createClient) {
@@ -17,6 +19,34 @@ export function createBrajeshClient() {
 
 export function getBrajeshRedirectURL(pathname = "/admin/") {
   return new URL(pathname, window.location.origin).toString();
+}
+
+function isAuthSessionMissingError(error) {
+  const message = String(error?.message || "").toLowerCase();
+  const code = String(error?.code || "").toLowerCase();
+
+  return message.includes("auth session missing")
+    || message.includes("session from session_id claim")
+    || code === "session_not_found";
+}
+
+function clearBrajeshAuthStorage() {
+  if (!window.localStorage) {
+    return;
+  }
+
+  const keysToRemove = [];
+
+  for (let index = 0; index < window.localStorage.length; index += 1) {
+    const key = window.localStorage.key(index);
+    if (key && key.startsWith(BRAJESH_STORAGE_PREFIX)) {
+      keysToRemove.push(key);
+    }
+  }
+
+  keysToRemove.forEach((key) => {
+    window.localStorage.removeItem(key);
+  });
 }
 
 export async function sendBrajeshMagicLink(client, email, pathname = "/admin/") {
@@ -44,11 +74,34 @@ export async function sendBrajeshMagicLink(client, email, pathname = "/admin/") 
 
 export async function getBrajeshSessionUser(client) {
   const {
+    data: { session },
+    error: sessionError,
+  } = await client.auth.getSession();
+
+  if (sessionError) {
+    if (isAuthSessionMissingError(sessionError)) {
+      clearBrajeshAuthStorage();
+      return null;
+    }
+
+    throw sessionError;
+  }
+
+  if (!session?.access_token) {
+    return null;
+  }
+
+  const {
     data: { user },
     error,
-  } = await client.auth.getUser();
+  } = await client.auth.getUser(session.access_token);
 
   if (error) {
+    if (isAuthSessionMissingError(error)) {
+      clearBrajeshAuthStorage();
+      return null;
+    }
+
     throw error;
   }
 
@@ -86,8 +139,10 @@ export async function requireBrajeshAdmin(client) {
 }
 
 export async function signOutBrajesh(client) {
-  const { error } = await client.auth.signOut();
-  if (error) {
+  const { error } = await client.auth.signOut({ scope: "local" });
+  clearBrajeshAuthStorage();
+
+  if (error && !isAuthSessionMissingError(error)) {
     throw error;
   }
 }
