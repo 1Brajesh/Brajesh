@@ -59,9 +59,12 @@ const elements = {
   displayProgressFill: document.querySelector("#displayProgressFill"),
   displayProgressLabel: document.querySelector("#displayProgressLabel"),
   startDisplay: document.querySelector("#startDisplay"),
+  skipDisplay: document.querySelector("#skipDisplay"),
   exitDisplay: document.querySelector("#exitDisplay"),
 };
 let displayFitFrame = 0;
+let displayTouchStart = null;
+let suppressDisplayClickUntil = 0;
 
 function setStatusElement(element, text, tone = "") {
   if (!element) return;
@@ -284,6 +287,10 @@ function getLongAffirmationSteps(body) {
     .filter(Boolean);
 
   return steps.length ? steps : [""];
+}
+
+function hasSkippableLongSequence() {
+  return Boolean(state.displaySequence && state.displaySequence.steps.length > 1);
 }
 
 function renderThemeOptions() {
@@ -757,6 +764,16 @@ function hideDisplayProgress() {
   elements.displayProgressLabel.textContent = "";
 }
 
+function syncDisplayControls() {
+  if (!elements.skipDisplay) {
+    return;
+  }
+
+  const canSkip = hasSkippableLongSequence();
+  elements.skipDisplay.hidden = !canSkip;
+  elements.skipDisplay.disabled = !canSkip;
+}
+
 function updateDisplayProgress(stepIndex, totalSteps) {
   if (totalSteps <= 1) {
     hideDisplayProgress();
@@ -780,6 +797,7 @@ function renderLongSequenceStep(item) {
   elements.displayText.textContent = line;
   elements.displayAnnouncer.textContent = `Line ${sequence.index + 1} of ${sequence.steps.length}. ${line}`;
   updateDisplayProgress(sequence.index, sequence.steps.length);
+  syncDisplayControls();
   scheduleDisplayFit();
 }
 
@@ -789,6 +807,7 @@ function renderDisplayItem(item) {
     elements.displayText.textContent = "No affirmations in this theme yet.";
     elements.displayAnnouncer.textContent = "No affirmations available.";
     hideDisplayProgress();
+    syncDisplayControls();
     scheduleDisplayFit();
     return;
   }
@@ -809,6 +828,7 @@ function renderDisplayItem(item) {
   elements.displayText.textContent = item.body;
   elements.displayAnnouncer.textContent = item.body;
   hideDisplayProgress();
+  syncDisplayControls();
   scheduleDisplayFit();
 }
 
@@ -893,6 +913,15 @@ function showNextAffirmation() {
   renderDisplayItem(getNextAffirmation());
 }
 
+function skipCurrentAffirmation() {
+  if (!hasSkippableLongSequence()) {
+    return;
+  }
+
+  state.displaySequence = null;
+  renderDisplayItem(getNextAffirmation());
+}
+
 function openDisplayMode(startItem = null) {
   elements.displayMode.hidden = false;
   document.body.style.overflow = "hidden";
@@ -923,6 +952,8 @@ function closeDisplayMode() {
   document.body.style.overflow = "";
   state.displaySequence = null;
   hideDisplayProgress();
+  syncDisplayControls();
+  displayTouchStart = null;
 }
 
 function clearAuthHash() {
@@ -1115,11 +1146,49 @@ elements.startDisplay.addEventListener("click", startDisplayFromCurrentTheme);
 if (elements.startDisplayTop) {
   elements.startDisplayTop.addEventListener("click", startDisplayFromCurrentTheme);
 }
+elements.skipDisplay.addEventListener("click", skipCurrentAffirmation);
 elements.exitDisplay.addEventListener("click", closeDisplayMode);
 
 elements.displayBody.addEventListener("click", (event) => {
   if (event.target.closest("button")) return;
+  if (Date.now() < suppressDisplayClickUntil) return;
   showNextAffirmation();
+});
+
+elements.displayBody.addEventListener("touchstart", (event) => {
+  if (!hasSkippableLongSequence() || event.touches.length !== 1) {
+    displayTouchStart = null;
+    return;
+  }
+
+  const touch = event.touches[0];
+  displayTouchStart = {
+    x: touch.clientX,
+    y: touch.clientY,
+  };
+}, { passive: true });
+
+elements.displayBody.addEventListener("touchend", (event) => {
+  if (!hasSkippableLongSequence() || !displayTouchStart || event.changedTouches.length !== 1) {
+    displayTouchStart = null;
+    return;
+  }
+
+  const touch = event.changedTouches[0];
+  const deltaX = touch.clientX - displayTouchStart.x;
+  const deltaY = touch.clientY - displayTouchStart.y;
+  displayTouchStart = null;
+
+  if (deltaX > -70) return;
+  if (Math.abs(deltaY) > 48) return;
+  if (Math.abs(deltaX) < Math.abs(deltaY) * 1.4) return;
+
+  suppressDisplayClickUntil = Date.now() + 500;
+  skipCurrentAffirmation();
+}, { passive: true });
+
+elements.displayBody.addEventListener("touchcancel", () => {
+  displayTouchStart = null;
 });
 
 document.addEventListener("keydown", (event) => {
@@ -1133,6 +1202,11 @@ document.addEventListener("keydown", (event) => {
   if (event.key === " " || event.key === "ArrowRight" || event.key === "ArrowDown") {
     event.preventDefault();
     showNextAffirmation();
+  }
+
+  if ((event.key === "n" || event.key === "N") && hasSkippableLongSequence()) {
+    event.preventDefault();
+    skipCurrentAffirmation();
   }
 });
 

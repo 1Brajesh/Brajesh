@@ -571,6 +571,12 @@
       margin-bottom: 12px;
     }
 
+    .display-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
     .display-mode .ghost-button,
     .display-mode .theme-pill {
       background: rgba(255, 255, 255, 0.06);
@@ -590,6 +596,22 @@
 
     .display-mode .theme-pill.is-random[aria-pressed="true"] {
       background: linear-gradient(180deg, rgba(244, 204, 138, 0.34), rgba(255, 255, 255, 0.06));
+    }
+
+    .skip-display-button {
+      min-width: 46px;
+      padding: 0 14px;
+    }
+
+    .skip-display-button svg {
+      display: block;
+      width: 18px;
+      height: 18px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
     }
 
     .display-body {
@@ -716,6 +738,10 @@
         justify-content: space-between;
       }
 
+      .display-actions {
+        width: auto;
+      }
+
       .display-text {
         width: 100%;
         letter-spacing: 0;
@@ -730,6 +756,10 @@
       .display-bar,
       .display-footer {
         gap: 8px;
+      }
+
+      .skip-display-button {
+        display: none;
       }
 
       .display-frame {
@@ -887,7 +917,15 @@
   <section class="display-mode" id="displayMode" hidden>
     <div class="display-bar">
       <div class="pill-row" id="displayThemeBar" aria-label="Display theme selection"></div>
-      <button class="ghost-button" type="button" id="exitDisplay">Exit</button>
+      <div class="display-actions">
+        <button class="ghost-button skip-display-button" type="button" id="skipDisplay" hidden aria-label="Skip to next long affirmation" title="Skip to next long affirmation">
+          <svg viewBox="0 0 20 20" aria-hidden="true" focusable="false">
+            <path d="M4 4l6 6-6 6"></path>
+            <path d="M10 4l6 6-6 6"></path>
+          </svg>
+        </button>
+        <button class="ghost-button" type="button" id="exitDisplay">Exit</button>
+      </div>
     </div>
 
     <div class="display-body" id="displayBody" tabindex="0" aria-label="Affirmation display area">
