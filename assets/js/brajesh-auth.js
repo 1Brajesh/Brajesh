@@ -30,8 +30,8 @@ export async function sendBrajeshMagicLink(client, email, pathname = "/admin/") 
     email: normalizedEmail,
     options: {
       emailRedirectTo: getBrajeshRedirectURL(pathname),
-      // Keep sign-in smooth for the single-owner flow. Access is still enforced by RLS.
-      shouldCreateUser: true,
+      // This is a private owner-only tool, so do not create new auth users from the login form.
+      shouldCreateUser: false,
     },
   });
 

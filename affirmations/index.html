@@ -1,0 +1,977 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Private affirmations workspace for Brajesh with magic-link access, bulk CSV tools, and fullscreen display mode.">
+  <title>Affirmations | Brajesh</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      --bg: #0b0b0b;
+      --panel: rgba(18, 18, 18, 0.84);
+      --panel-strong: rgba(26, 26, 26, 0.96);
+      --line: rgba(255, 255, 255, 0.1);
+      --line-strong: rgba(255, 255, 255, 0.22);
+      --text: #f6f3eb;
+      --muted: rgba(246, 243, 235, 0.72);
+      --faint: rgba(246, 243, 235, 0.5);
+      --accent: #f4cc8a;
+      --accent-strong: #fff2d8;
+      --accent-soft: rgba(244, 204, 138, 0.12);
+      --danger: #ffb7b7;
+      --shadow: 0 24px 90px rgba(0, 0, 0, 0.34);
+      --radius: 28px;
+      --safe-top: max(20px, env(safe-area-inset-top));
+      --safe-right: max(20px, env(safe-area-inset-right));
+      --safe-bottom: max(20px, env(safe-area-inset-bottom));
+      --safe-left: max(20px, env(safe-area-inset-left));
+      --serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+      --sans: "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      margin: 0;
+      min-width: 320px;
+      background:
+        radial-gradient(circle at 16% 18%, rgba(203, 143, 58, 0.18), transparent 22%),
+        radial-gradient(circle at 78% 14%, rgba(91, 124, 211, 0.14), transparent 24%),
+        radial-gradient(circle at 50% 80%, rgba(138, 67, 175, 0.1), transparent 28%),
+        linear-gradient(180deg, #100d0c 0%, #080808 42%, #0d0d0d 100%);
+      color: var(--text);
+      font-family: var(--sans);
+      line-height: 1.5;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(0, 0, 0, 0.18), transparent 16%, transparent 84%, rgba(0, 0, 0, 0.18)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(0, 0, 0, 0.22));
+      z-index: -2;
+    }
+
+    a {
+      color: inherit;
+      text-decoration: none;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      font: inherit;
+    }
+
+    button {
+      cursor: pointer;
+    }
+
+    button,
+    input,
+    select,
+    textarea {
+      border: 1px solid var(--line);
+      border-radius: 18px;
+      outline: none;
+      color: var(--text);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    button:focus-visible,
+    input:focus-visible,
+    select:focus-visible,
+    textarea:focus-visible {
+      border-color: var(--line-strong);
+      box-shadow: 0 0 0 4px rgba(244, 204, 138, 0.12);
+    }
+
+    .page {
+      width: min(1320px, calc(100% - 28px));
+      margin: 0 auto;
+      padding: 18px 0 72px;
+    }
+
+    .topbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 14px 0 22px;
+    }
+
+    .brand {
+      display: grid;
+      gap: 2px;
+    }
+
+    .brand strong {
+      font-family: var(--serif);
+      font-size: clamp(2.1rem, 5vw, 4.4rem);
+      font-weight: 600;
+      line-height: 0.9;
+      letter-spacing: -0.03em;
+    }
+
+    .brand span {
+      color: var(--muted);
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+    }
+
+    .top-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+    }
+
+    .ghost-button,
+    .primary-button,
+    .subtle-button {
+      min-height: 46px;
+      border-radius: 999px;
+      padding: 0 18px;
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+
+    .ghost-button {
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+    }
+
+    .ghost-button:hover,
+    .ghost-button:focus-visible {
+      border-color: var(--line-strong);
+      color: var(--text);
+      transform: translateY(-1px);
+    }
+
+    .primary-button {
+      border-color: transparent;
+      background: linear-gradient(180deg, #f4cc8a, #b88944);
+      color: #17110c;
+      font-weight: 800;
+    }
+
+    .primary-button:hover,
+    .primary-button:focus-visible {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 24px rgba(244, 204, 138, 0.2);
+    }
+
+    .subtle-button {
+      background: rgba(255, 255, 255, 0.02);
+      color: var(--faint);
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 1.1fr) minmax(320px, 0.9fr);
+      gap: 18px;
+    }
+
+    .panel {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(24px);
+    }
+
+    .panel::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(120deg, rgba(255, 255, 255, 0.03), transparent 24%, transparent 76%, rgba(255, 255, 255, 0.03)),
+        radial-gradient(circle at 88% 10%, rgba(244, 204, 138, 0.08), transparent 26%);
+    }
+
+    .intro {
+      padding: clamp(22px, 4vw, 36px);
+      display: grid;
+      align-content: space-between;
+      gap: 22px;
+      min-height: 280px;
+    }
+
+    .eyebrow {
+      margin: 0 0 10px;
+      color: var(--accent);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.26em;
+      text-transform: uppercase;
+    }
+
+    h1,
+    h2,
+    h3 {
+      margin: 0;
+      font-family: var(--serif);
+      font-weight: 600;
+      line-height: 0.95;
+      letter-spacing: -0.03em;
+    }
+
+    h1 {
+      font-size: clamp(2.9rem, 6vw, 6.2rem);
+    }
+
+    h2 {
+      font-size: clamp(2rem, 4vw, 3rem);
+    }
+
+    h3 {
+      font-size: 1.5rem;
+    }
+
+    .intro p {
+      margin: 0;
+      max-width: 46ch;
+      color: var(--muted);
+      font-size: 1.02rem;
+    }
+
+    .feature-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+    }
+
+    .feature {
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 16px;
+      background: rgba(255, 255, 255, 0.03);
+    }
+
+    .feature strong {
+      display: block;
+      margin-bottom: 6px;
+      font-size: 0.82rem;
+      color: var(--accent-strong);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+
+    .feature span {
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .preview-panel {
+      padding: 18px;
+      display: grid;
+      gap: 12px;
+    }
+
+    .preview-label {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .viewer-preview {
+      min-height: 240px;
+      border-radius: 24px;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      background: #050505;
+      display: grid;
+      place-items: center;
+      padding: 24px;
+      box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+    }
+
+    .viewer-preview p {
+      margin: 0;
+      max-width: 12ch;
+      font-family: var(--serif);
+      font-size: clamp(2rem, 5vw, 4.4rem);
+      line-height: 0.98;
+      text-align: center;
+      text-wrap: balance;
+    }
+
+    .preview-note {
+      color: var(--faint);
+      font-size: 0.88rem;
+    }
+
+    .workspace {
+      display: grid;
+      grid-template-columns: minmax(300px, 0.95fr) minmax(0, 1.05fr);
+      gap: 18px;
+      margin-top: 18px;
+    }
+
+    .stack {
+      display: grid;
+      gap: 18px;
+    }
+
+    .section {
+      padding: 22px;
+      display: grid;
+      gap: 16px;
+    }
+
+    .section-head {
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .section-head p {
+      margin: 8px 0 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      min-height: 34px;
+      padding: 0 12px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      color: var(--muted);
+      background: rgba(255, 255, 255, 0.04);
+      font-size: 0.83rem;
+      white-space: nowrap;
+    }
+
+    .form-grid {
+      display: grid;
+      gap: 12px;
+    }
+
+    label {
+      display: grid;
+      gap: 8px;
+      color: var(--muted);
+      font-size: 0.83rem;
+      font-weight: 700;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    textarea,
+    input,
+    select {
+      width: 100%;
+      padding: 14px 16px;
+    }
+
+    textarea {
+      min-height: 140px;
+      resize: vertical;
+      line-height: 1.4;
+    }
+
+    .split {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+      gap: 12px;
+    }
+
+    .helper {
+      color: var(--faint);
+      font-size: 0.88rem;
+    }
+
+    .text-link {
+      color: var(--accent-strong);
+      text-decoration: underline;
+      text-decoration-color: rgba(244, 204, 138, 0.45);
+      text-underline-offset: 0.16em;
+    }
+
+    .text-link:hover,
+    .text-link:focus-visible {
+      text-decoration-color: rgba(244, 204, 138, 0.9);
+    }
+
+    .tool-grid {
+      display: grid;
+      gap: 12px;
+      padding: 16px 18px;
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      background: rgba(255, 255, 255, 0.02);
+    }
+
+    .tool-row {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 14px;
+    }
+
+    .tool-copy {
+      display: grid;
+      gap: 6px;
+      max-width: 48ch;
+    }
+
+    .tool-copy strong {
+      font-size: 0.82rem;
+      color: var(--accent-strong);
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .tool-copy p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.92rem;
+    }
+
+    .tool-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .tool-status {
+      margin: 0;
+      color: var(--faint);
+      font-size: 0.9rem;
+      min-height: 1.4em;
+    }
+
+    .tool-status[data-tone="ok"] {
+      color: var(--accent-strong);
+    }
+
+    .tool-status[data-tone="warn"] {
+      color: #f3d284;
+    }
+
+    .tool-status[data-tone="error"] {
+      color: var(--danger);
+    }
+
+    .button-cluster {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
+    .pill-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+
+    .pill,
+    .theme-pill {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 40px;
+      padding: 0 14px;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--muted);
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+
+    .theme-pill:hover,
+    .theme-pill:focus-visible,
+    .theme-pill[aria-pressed="true"] {
+      border-color: rgba(244, 204, 138, 0.28);
+      background: var(--accent-soft);
+      color: var(--accent-strong);
+      transform: translateY(-1px);
+    }
+
+    .theme-pill.is-random[aria-pressed="true"] {
+      background: linear-gradient(180deg, rgba(244, 204, 138, 0.24), rgba(255, 255, 255, 0.04));
+    }
+
+    .list-meta {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .affirmation-list {
+      display: grid;
+      gap: 12px;
+      max-height: 720px;
+      overflow: auto;
+      padding-right: 4px;
+    }
+
+    .affirmation-list::-webkit-scrollbar {
+      width: 10px;
+    }
+
+    .affirmation-list::-webkit-scrollbar-thumb {
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    .affirmation-card {
+      border: 1px solid var(--line);
+      border-radius: 24px;
+      padding: 18px;
+      background: rgba(255, 255, 255, 0.03);
+      display: grid;
+      gap: 14px;
+    }
+
+    .affirmation-card blockquote {
+      margin: 0;
+      font-family: var(--serif);
+      font-size: clamp(1.4rem, 2vw, 2rem);
+      line-height: 1.04;
+      text-wrap: balance;
+      white-space: pre-line;
+    }
+
+    .affirmation-card footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .card-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .card-actions button {
+      min-height: 38px;
+      padding: 0 12px;
+      border-radius: 999px;
+      color: var(--muted);
+    }
+
+    .card-actions button:hover,
+    .card-actions button:focus-visible {
+      color: var(--text);
+      border-color: var(--line-strong);
+    }
+
+    .launch-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .launch-row p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .display-mode {
+      position: fixed;
+      inset: 0;
+      z-index: 100;
+      background: #000;
+      color: #fff;
+      display: grid;
+      grid-template-rows: auto 1fr auto;
+      padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
+    }
+
+    .display-mode[hidden] {
+      display: none;
+    }
+
+    .display-bar,
+    .display-footer {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+    }
+
+    .display-bar {
+      margin-bottom: 12px;
+    }
+
+    .display-mode .ghost-button,
+    .display-mode .theme-pill {
+      background: rgba(255, 255, 255, 0.06);
+      border-color: rgba(255, 255, 255, 0.1);
+      color: rgba(255, 255, 255, 0.88);
+    }
+
+    .display-body {
+      position: relative;
+      min-height: 0;
+      display: grid;
+      place-items: center;
+      overflow: hidden;
+    }
+
+    .display-stage {
+      width: min(1200px, 100%);
+      height: 100%;
+      display: grid;
+      place-items: center;
+      padding: 12px;
+    }
+
+    .display-text {
+      margin: 0;
+      width: 100%;
+      max-width: 17ch;
+      font-family: var(--serif);
+      font-weight: 600;
+      line-height: 0.95;
+      letter-spacing: -0.04em;
+      text-align: center;
+      text-wrap: balance;
+      user-select: none;
+      white-space: pre-line;
+    }
+
+    .display-footer {
+      color: rgba(255, 255, 255, 0.58);
+      font-size: 0.9rem;
+      margin-top: 12px;
+    }
+
+    .display-footer .pill-row {
+      justify-content: flex-end;
+    }
+
+    .empty {
+      border: 1px dashed var(--line);
+      border-radius: 24px;
+      padding: 24px;
+      color: var(--faint);
+      text-align: center;
+    }
+
+    .screen-reader {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    @media (max-width: 1120px) {
+      .hero,
+      .workspace {
+        grid-template-columns: 1fr;
+      }
+
+      .feature-list {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 720px) {
+      .page {
+        width: calc(100% - 18px);
+      }
+
+      .section,
+      .preview-panel,
+      .intro {
+        padding: 18px;
+      }
+
+      .split {
+        grid-template-columns: 1fr;
+      }
+
+      .top-actions,
+      .launch-row,
+      .list-meta,
+      .display-footer {
+        align-items: stretch;
+      }
+
+      .top-actions > *,
+      .launch-row > *,
+      .display-footer > * {
+        width: 100%;
+      }
+
+      .display-bar {
+        justify-content: space-between;
+      }
+
+      .display-text {
+        max-width: 12ch;
+      }
+    }
+
+    @media (max-width: 520px) {
+      .display-mode {
+        grid-template-rows: auto 1fr auto;
+      }
+
+      .display-bar,
+      .display-footer {
+        gap: 8px;
+      }
+
+      .display-footer .pill-row {
+        justify-content: flex-start;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="page">
+    <header class="topbar">
+      <a class="brand" href="../" aria-label="Back to Brajesh home">
+        <strong>Affirmations</strong>
+        <span>Private Library</span>
+      </a>
+      <div class="top-actions">
+        <a class="ghost-button" href="../admin/">Admin</a>
+        <a class="ghost-button" href="../">Poems</a>
+        <button class="ghost-button" type="button" id="logoutButton" hidden>Sign Out</button>
+        <button class="primary-button" type="button" id="startDisplayTop" hidden>Start Display</button>
+      </div>
+    </header>
+
+    <p class="tool-status" id="pageStatus" role="status">Checking access.</p>
+
+    <section class="panel section" id="loginPanel">
+      <div class="section-head">
+        <div>
+          <h2>Magic Link Login</h2>
+          <p>Use your approved admin email to open the private affirmations workspace.</p>
+        </div>
+        <span class="badge">Private</span>
+      </div>
+
+      <form class="form-grid" id="loginForm">
+        <label>
+          Email
+          <input name="email" type="email" autocomplete="email" inputmode="email" required>
+        </label>
+
+        <div class="launch-row">
+          <p id="sessionHint">A sign-in link will be emailed to your approved admin address.</p>
+          <span class="button-cluster">
+            <button class="ghost-button" type="button" id="loginLogoutButton" hidden>Use Different Email</button>
+            <button class="primary-button" type="submit">Send Magic Link</button>
+          </span>
+        </div>
+      </form>
+    </section>
+
+    <section id="appShell" hidden>
+    <section class="hero">
+      <section class="panel intro">
+        <div>
+          <p class="eyebrow">Private Workspace</p>
+          <h1>Add. Filter. Display.</h1>
+          <p>
+            This page is now the real affirmations library. Add affirmations by theme,
+            import them from CSV without duplicates, export them back out for bulk edits,
+            and launch a fullscreen black-screen viewer that shows one affirmation at a time.
+          </p>
+        </div>
+        <div class="feature-list" aria-label="Feature summary">
+          <div class="feature">
+            <strong>Add</strong>
+            <span>Create a new affirmation and either reuse a theme or create one.</span>
+          </div>
+          <div class="feature">
+            <strong>Filter</strong>
+            <span>Switch between personal, relationships, work, health, or random.</span>
+          </div>
+          <div class="feature">
+            <strong>Display</strong>
+            <span>Show one fullscreen affirmation at a time and tap anywhere for the next one.</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="panel preview-panel">
+        <div class="preview-label">
+          <span>Fullscreen viewer preview</span>
+          <span class="badge" id="previewThemeBadge">Theme: Random</span>
+        </div>
+        <div class="viewer-preview" aria-hidden="true">
+          <p id="previewQuote">I become larger than the stories that used to shrink me.</p>
+        </div>
+        <div class="preview-note">
+          This viewer uses the largest font that fits the screen, then
+          advance to a new random affirmation on tap, click, or spacebar.
+        </div>
+      </aside>
+    </section>
+
+    <section class="workspace">
+      <div class="stack">
+        <section class="panel section">
+          <div class="section-head">
+            <div>
+              <h2>Add New</h2>
+              <p id="editorSummary">Add a new affirmation or load an existing one into the form for editing.</p>
+            </div>
+            <span class="badge" id="editorModeBadge">Mode: Add</span>
+          </div>
+
+          <form class="form-grid" id="affirmationForm">
+            <label>
+              Affirmation
+              <textarea name="body" placeholder="I trust my own timing and move through life with calm conviction." required></textarea>
+            </label>
+
+            <div class="split">
+              <label>
+                Existing Theme
+                <select name="theme">
+                  <option value="personal">Personal</option>
+                  <option value="relationships">Relationships</option>
+                  <option value="work">Work</option>
+                  <option value="health">Health</option>
+                </select>
+              </label>
+
+              <label>
+                New Theme
+                <input name="newTheme" type="text" placeholder="Optional new tag">
+              </label>
+            </div>
+
+            <div class="launch-row">
+              <p>Use a new theme only when you want to create a new bucket. Otherwise reuse an existing one.</p>
+              <span class="button-cluster">
+                <button class="ghost-button" type="button" id="cancelEditButton" hidden>Cancel Edit</button>
+                <button class="primary-button" type="submit" id="saveAffirmationButton">Save Affirmation</button>
+              </span>
+            </div>
+          </form>
+
+          <p class="tool-status" id="editorStatus" role="status">Add a new affirmation or import a CSV.</p>
+
+          <div class="tool-grid">
+            <div class="tool-row">
+              <div class="tool-copy">
+                <strong>Bulk CSV</strong>
+                <p>Import a local CSV using the columns <code>affirmation,theme</code>. Duplicate imports are skipped by matching normalized theme + affirmation text.</p>
+                <p>Export the full library back to CSV for bulk editing, or start from <a class="text-link" href="./import-template.csv">import-template.csv</a>.</p>
+              </div>
+              <div class="tool-actions">
+                <input id="csvFileInput" type="file" accept=".csv,text/csv" hidden>
+                <button class="ghost-button" type="button" id="importCsvButton">Import CSV</button>
+                <button class="ghost-button" type="button" id="exportCsvButton">Export CSV</button>
+              </div>
+            </div>
+            <p class="tool-status" id="csvStatus" role="status">CSV format: first column = affirmation, second column = theme.</p>
+          </div>
+        </section>
+
+        <section class="panel section">
+          <div class="section-head">
+            <div>
+              <h2>Display Setup</h2>
+              <p>Choose the theme to play in fullscreen mode. Random means all themes together.</p>
+            </div>
+            <span class="badge" id="selectedThemeBadge">Selected: Random</span>
+          </div>
+
+          <div class="pill-row" id="themeFilterBar" aria-label="Theme filters"></div>
+
+          <div class="launch-row">
+            <p id="themeSummary">Showing affirmations from every theme.</p>
+            <button class="primary-button" type="button" id="startDisplay">Start Fullscreen Display</button>
+          </div>
+        </section>
+      </div>
+
+      <section class="panel section">
+        <div class="section-head">
+          <div>
+            <h2>Affirmation Library</h2>
+            <p>Owner-facing management list backed by Supabase. Edit loads an affirmation into the form and saves changes back to the database.</p>
+          </div>
+          <span class="badge" id="libraryCountBadge">0 items</span>
+        </div>
+
+        <div class="list-meta">
+          <div class="helper" id="libraryThemeMessage">Filter: Random</div>
+          <div class="helper">Display uses the current filter. Edit loads an item back into the form.</div>
+        </div>
+
+        <div class="affirmation-list" id="affirmationList" aria-live="polite"></div>
+      </section>
+    </section>
+    </section>
+  </main>
+
+  <section class="display-mode" id="displayMode" hidden>
+    <div class="display-bar">
+      <div class="pill-row" id="displayThemeBar" aria-label="Display theme selection"></div>
+      <button class="ghost-button" type="button" id="exitDisplay">Exit</button>
+    </div>
+
+    <div class="display-body" id="displayBody" tabindex="0" aria-label="Affirmation display area">
+      <div class="display-stage" id="displayStage">
+        <p class="display-text" id="displayText">I trust my own timing and move through life with calm conviction.</p>
+      </div>
+      <p class="screen-reader" aria-live="polite" id="displayAnnouncer"></p>
+    </div>
+
+    <div class="display-footer">
+      <span id="displayMeta">Theme: Random</span>
+      <div class="pill-row">
+        <span class="pill">Tap / Click: Next</span>
+        <span class="pill">Esc: Exit</span>
+      </div>
+    </div>
+  </section>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script type="module" src="../assets/js/brajesh-affirmations.js"></script>
+</body>
+</html>
