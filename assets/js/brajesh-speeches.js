@@ -755,7 +755,6 @@ function renderDetailActions(speech) {
     elements.detailActionRow.innerHTML = `
       <button class="ghost-button" type="button" data-action="edit-speech">Edit Idea</button>
       <button class="ghost-button" type="button" data-action="edit-version">Edit Note</button>
-      <button class="primary-button" type="button" data-action="new-version">New Version</button>
       <button class="danger-button" type="button" data-action="delete-speech">Delete Idea</button>
     `;
     return;
@@ -764,7 +763,6 @@ function renderDetailActions(speech) {
   elements.detailActionRow.innerHTML = `
     <button class="ghost-button" type="button" data-action="edit-speech">Edit Details</button>
     <button class="ghost-button" type="button" data-action="edit-version">Edit Script</button>
-    <button class="ghost-button" type="button" data-action="new-version">New Version</button>
     <button class="primary-button" type="button" data-action="new-delivery">Log Run</button>
     <button class="danger-button" type="button" data-action="delete-speech">Delete Speech</button>
   `;
@@ -955,7 +953,10 @@ function renderVersionsTab(speech) {
       <div class="card">
         <div class="panel-head">
           <h4>Version History</h4>
-          <span class="meta-chip">${speech.versions.length} total</span>
+          <div class="button-row">
+            <span class="meta-chip">${speech.versions.length} total</span>
+            <button class="ghost-button" type="button" data-action="new-version">New Version</button>
+          </div>
         </div>
         <div class="version-list">
           ${speech.versions.map((version) => `
