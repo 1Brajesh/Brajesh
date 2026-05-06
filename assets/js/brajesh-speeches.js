@@ -75,6 +75,7 @@ const elements = {
   editorForm: document.querySelector("#editorForm"),
   editorFields: document.querySelector("#editorFields"),
   editorFooterNote: document.querySelector("#editorFooterNote"),
+  deleteEditorButton: document.querySelector("#deleteEditorButton"),
   closeEditorButton: document.querySelector("#closeEditorButton"),
   cancelEditorButton: document.querySelector("#cancelEditorButton"),
   saveEditorButton: document.querySelector("#saveEditorButton"),
@@ -1175,6 +1176,20 @@ function setEditorStatus(text = "", tone = "") {
   elements.editorStatus.dataset.tone = tone;
 }
 
+function setSaveButtonLabel(label, isBusy = false) {
+  if (isBusy) {
+    elements.saveEditorButton.innerHTML = `
+      <span class="button-content">
+        <span class="button-spinner" aria-hidden="true"></span>
+        <span>${escapeHtml(label)}</span>
+      </span>
+    `;
+    return;
+  }
+
+  elements.saveEditorButton.textContent = label;
+}
+
 function setEditorBusy(isBusy, busyLabel = "Saving...") {
   editorBusy = isBusy;
   elements.editorShell.dataset.busy = String(isBusy);
@@ -1185,13 +1200,14 @@ function setEditorBusy(isBusy, busyLabel = "Saving...") {
 
   elements.closeEditorButton.disabled = isBusy;
   elements.cancelEditorButton.disabled = isBusy;
+  elements.deleteEditorButton.disabled = isBusy;
 
   if (isBusy) {
-    elements.saveEditorButton.textContent = busyLabel;
+    setSaveButtonLabel(busyLabel, true);
     return;
   }
 
-  elements.saveEditorButton.textContent = elements.saveEditorButton.dataset.defaultLabel || elements.saveEditorButton.textContent;
+  setSaveButtonLabel(elements.saveEditorButton.dataset.defaultLabel || elements.saveEditorButton.textContent);
 }
 
 function openSpeechEditor({ speechId = null, statusPreset = "draft" } = {}) {
@@ -1271,7 +1287,9 @@ function closeEditor() {
   elements.editorFields.innerHTML = "";
   elements.editorContextNote.textContent = "";
   elements.editorFooterNote.textContent = "";
-  elements.saveEditorButton.textContent = elements.saveEditorButton.dataset.defaultLabel || elements.saveEditorButton.textContent;
+  setSaveButtonLabel(elements.saveEditorButton.dataset.defaultLabel || elements.saveEditorButton.textContent);
+  elements.deleteEditorButton.hidden = true;
+  elements.deleteEditorButton.textContent = "Delete Speech";
   setEditorStatus("");
   document.body.classList.remove("drawer-open");
 }
@@ -1624,13 +1642,17 @@ function renderEditor() {
   elements.editorShell.dataset.layout = config.layout || "drawer";
   elements.closeEditorButton.textContent = config.dismissLabel || "Cancel";
   elements.cancelEditorButton.textContent = config.dismissLabel || "Close";
-  elements.saveEditorButton.textContent = config.saveLabel;
   elements.saveEditorButton.dataset.defaultLabel = config.saveLabel;
+  setSaveButtonLabel(config.saveLabel);
   elements.editorFields.innerHTML = config.fields;
   setEditorStatus("");
   elements.editorShell.hidden = false;
   document.body.classList.add("drawer-open");
   setEditorBusy(false);
+
+  const showSpeechDelete = state.editor.kind === "speech" && state.editor.intent === "edit" && Boolean(speech);
+  elements.deleteEditorButton.hidden = !showSpeechDelete;
+  elements.deleteEditorButton.textContent = speech?.status === "idea" ? "Delete Idea" : "Delete Speech";
 
   requestAnimationFrame(() => {
     elements.editorFields.querySelector("input, textarea, select")?.focus();
@@ -2187,6 +2209,11 @@ elements.closeEditorButton.addEventListener("click", () => {
 elements.cancelEditorButton.addEventListener("click", () => {
   if (editorBusy) return;
   closeEditor();
+});
+
+elements.deleteEditorButton.addEventListener("click", () => {
+  if (editorBusy) return;
+  deleteSpeech();
 });
 
 elements.editorForm.addEventListener("submit", saveEditor);

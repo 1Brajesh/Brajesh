@@ -94,6 +94,13 @@
       cursor: pointer;
     }
 
+    button:disabled {
+      cursor: wait;
+      opacity: 0.72;
+      transform: none !important;
+      box-shadow: none !important;
+    }
+
     button:focus-visible,
     input:focus-visible,
     select:focus-visible,
@@ -204,6 +211,31 @@
       color: var(--coral);
       background: rgba(255, 157, 132, 0.08);
       border-color: rgba(255, 157, 132, 0.22);
+    }
+
+    .button-content {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .button-spinner {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      border: 2px solid currentColor;
+      border-right-color: transparent;
+      animation: button-spin 0.75s linear infinite;
+    }
+
+    @keyframes button-spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
     }
 
     .workspace {
@@ -904,6 +936,14 @@
       padding-top: 6px;
     }
 
+    .editor-footer-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      align-items: center;
+      justify-content: flex-end;
+    }
+
     .editor-status {
       min-height: 20px;
       color: var(--faint);
@@ -1163,7 +1203,8 @@
 
           <div class="editor-footer">
             <span class="editor-status" id="editorFooterNote"></span>
-            <div class="button-row">
+            <div class="editor-footer-actions">
+              <button class="danger-button" type="button" id="deleteEditorButton" hidden>Delete Speech</button>
               <button class="ghost-button" type="button" id="cancelEditorButton">Close</button>
               <button class="primary-button" type="submit" id="saveEditorButton">Save</button>
             </div>
