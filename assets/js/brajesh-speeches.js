@@ -34,6 +34,8 @@ const state = {
 };
 let pageLoadPromise = null;
 let pageReloadQueued = false;
+let editorBusy = false;
+let speechDeleteBusy = false;
 
 const elements = {
   pageStatus: document.querySelector("#pageStatus"),
@@ -96,6 +98,15 @@ function setStatusElement(element, text, tone = "") {
 
 function setPageStatus(text, tone = "") {
   setStatusElement(elements.pageStatus, text, tone);
+}
+
+function reportEditorError(message) {
+  if (elements.editorShell.hidden) {
+    setPageStatus(message, "error");
+    return;
+  }
+
+  setEditorStatus(message, "error");
 }
 
 function describeLoadError(error) {
@@ -744,6 +755,7 @@ function renderDetailActions(speech) {
       <button class="ghost-button" type="button" data-action="edit-speech">Edit Idea</button>
       <button class="ghost-button" type="button" data-action="edit-version">Edit Note</button>
       <button class="primary-button" type="button" data-action="new-version">New Version</button>
+      <button class="danger-button" type="button" data-action="delete-speech">Delete Idea</button>
     `;
     return;
   }
@@ -753,6 +765,7 @@ function renderDetailActions(speech) {
     <button class="ghost-button" type="button" data-action="edit-version">Edit Script</button>
     <button class="ghost-button" type="button" data-action="new-version">New Version</button>
     <button class="primary-button" type="button" data-action="new-delivery">Log Run</button>
+    <button class="danger-button" type="button" data-action="delete-speech">Delete Speech</button>
   `;
 }
 
@@ -1162,6 +1175,25 @@ function setEditorStatus(text = "", tone = "") {
   elements.editorStatus.dataset.tone = tone;
 }
 
+function setEditorBusy(isBusy, busyLabel = "Saving...") {
+  editorBusy = isBusy;
+  elements.editorShell.dataset.busy = String(isBusy);
+
+  Array.from(elements.editorForm.elements).forEach((field) => {
+    field.disabled = isBusy;
+  });
+
+  elements.closeEditorButton.disabled = isBusy;
+  elements.cancelEditorButton.disabled = isBusy;
+
+  if (isBusy) {
+    elements.saveEditorButton.textContent = busyLabel;
+    return;
+  }
+
+  elements.saveEditorButton.textContent = elements.saveEditorButton.dataset.defaultLabel || elements.saveEditorButton.textContent;
+}
+
 function openSpeechEditor({ speechId = null, statusPreset = "draft" } = {}) {
   state.editor = {
     open: true,
@@ -1222,6 +1254,7 @@ function openDeliveryEditor({ speechId = null, deliveryId = null } = {}) {
 }
 
 function closeEditor() {
+  editorBusy = false;
   state.editor = {
     open: false,
     kind: null,
@@ -1238,6 +1271,7 @@ function closeEditor() {
   elements.editorFields.innerHTML = "";
   elements.editorContextNote.textContent = "";
   elements.editorFooterNote.textContent = "";
+  elements.saveEditorButton.textContent = elements.saveEditorButton.dataset.defaultLabel || elements.saveEditorButton.textContent;
   setEditorStatus("");
   document.body.classList.remove("drawer-open");
 }
@@ -1591,10 +1625,12 @@ function renderEditor() {
   elements.closeEditorButton.textContent = config.dismissLabel || "Cancel";
   elements.cancelEditorButton.textContent = config.dismissLabel || "Close";
   elements.saveEditorButton.textContent = config.saveLabel;
+  elements.saveEditorButton.dataset.defaultLabel = config.saveLabel;
   elements.editorFields.innerHTML = config.fields;
   setEditorStatus("");
   elements.editorShell.hidden = false;
   document.body.classList.add("drawer-open");
+  setEditorBusy(false);
 
   requestAnimationFrame(() => {
     elements.editorFields.querySelector("input, textarea, select")?.focus();
@@ -1688,7 +1724,7 @@ async function saveSpeech(formData) {
     await loadSpeeches({ silent: true });
     setPageStatus(isEdit ? "Speech details saved." : "Speech created.", "ok");
   } catch (error) {
-    setEditorStatus(error.message || "Could not save that speech.", "error");
+    reportEditorError(error.message || "Could not save that speech.");
   }
 }
 
@@ -1760,7 +1796,7 @@ async function saveVersion(formData) {
     await loadSpeeches({ silent: true });
     setPageStatus(isEdit ? "Script saved." : "New version created.", "ok");
   } catch (error) {
-    setEditorStatus(error.message || "Could not save that version.", "error");
+    reportEditorError(error.message || "Could not save that version.");
   }
 }
 
@@ -1832,26 +1868,90 @@ async function saveDelivery(formData) {
     await loadSpeeches({ silent: true });
     setPageStatus(isEdit ? "Run saved." : "Run logged.", "ok");
   } catch (error) {
-    setEditorStatus(error.message || "Could not save that run.", "error");
+    reportEditorError(error.message || "Could not save that run.");
   }
 }
 
 async function saveEditor(event) {
   event.preventDefault();
+  if (editorBusy) {
+    return;
+  }
+
   const formData = new FormData(elements.editorForm);
+  const busyLabel = state.editor.kind === "delivery"
+    ? (state.editor.intent === "edit" ? "Saving Run..." : "Logging Run...")
+    : state.editor.kind === "version"
+      ? (state.editor.intent === "edit" ? "Saving Script..." : "Creating Version...")
+      : (state.editor.intent === "edit" ? "Saving Speech..." : "Creating Speech...");
 
-  if (state.editor.kind === "speech") {
-    await saveSpeech(formData);
+  setEditorBusy(true, busyLabel);
+  setEditorStatus(busyLabel, "ok");
+
+  try {
+    if (state.editor.kind === "speech") {
+      await saveSpeech(formData);
+      return;
+    }
+
+    if (state.editor.kind === "version") {
+      await saveVersion(formData);
+      return;
+    }
+
+    if (state.editor.kind === "delivery") {
+      await saveDelivery(formData);
+    }
+  } finally {
+    if (!elements.editorShell.hidden) {
+      setEditorBusy(false);
+    }
+  }
+}
+
+async function deleteSpeech() {
+  const speech = ensureSelection();
+  if (!speech || speechDeleteBusy) {
     return;
   }
 
-  if (state.editor.kind === "version") {
-    await saveVersion(formData);
+  const speechLabel = speech.status === "idea" ? "idea" : "speech";
+  const versionLabel = `${speech.versions.length} ${speech.versions.length === 1 ? "version" : "versions"}`;
+  const runLabel = `${speech.deliveries.length} ${speech.deliveries.length === 1 ? "run" : "runs"}`;
+  const confirmed = window.confirm(
+    `Delete "${speech.title}"?\n\nThis will permanently remove the ${speechLabel}, ${versionLabel}, and ${runLabel}.`,
+  );
+
+  if (!confirmed) {
     return;
   }
 
-  if (state.editor.kind === "delivery") {
-    await saveDelivery(formData);
+  speechDeleteBusy = true;
+  setPageStatus(`Deleting "${speech.title}"...`);
+
+  try {
+    const speechId = speech.id;
+    closeEditor();
+
+    const { error } = await db
+      .from("brajesh_speeches")
+      .delete()
+      .eq("id", speechId);
+
+    if (error) throw error;
+
+    if (state.selectedSpeechId === speechId) {
+      state.selectedSpeechId = null;
+      state.selectedVersionId = null;
+      state.selectedDeliveryId = null;
+    }
+
+    await loadSpeeches({ silent: true });
+    setPageStatus(`Deleted "${speech.title}".`, "ok");
+  } catch (error) {
+    setPageStatus(error.message || `Could not delete "${speech.title}".`, "error");
+  } finally {
+    speechDeleteBusy = false;
   }
 }
 
@@ -1953,6 +2053,11 @@ function runAction(action) {
 
   if (action === "start-rehearsal") {
     openRehearsal();
+    return;
+  }
+
+  if (action === "delete-speech") {
+    deleteSpeech();
   }
 }
 
@@ -2070,14 +2175,17 @@ elements.tabContent.addEventListener("click", (event) => {
 });
 
 elements.editorBackdrop.addEventListener("click", () => {
+  if (editorBusy) return;
   closeEditor();
 });
 
 elements.closeEditorButton.addEventListener("click", () => {
+  if (editorBusy) return;
   closeEditor();
 });
 
 elements.cancelEditorButton.addEventListener("click", () => {
+  if (editorBusy) return;
   closeEditor();
 });
 
@@ -2123,6 +2231,7 @@ document.addEventListener("keydown", (event) => {
   }
 
   if (!elements.editorShell.hidden && event.key === "Escape") {
+    if (editorBusy) return;
     closeEditor();
   }
 });
