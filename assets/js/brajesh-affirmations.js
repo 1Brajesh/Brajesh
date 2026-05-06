@@ -14,6 +14,7 @@ const state = {
   selectedTheme: "random",
   editingId: null,
   displayQueue: [],
+  displayIndex: -1,
   currentDisplayId: null,
   displaySequence: null,
 };
@@ -489,6 +490,8 @@ function renderControls() {
   renderThemePills(elements.displayThemeBar, state.selectedTheme, (theme) => {
     state.selectedTheme = theme;
     state.displayQueue = [];
+    state.displayIndex = -1;
+    state.currentDisplayId = null;
     state.displaySequence = null;
     renderControls();
     renderLibrary();
@@ -774,16 +777,19 @@ function syncDisplayControls() {
   elements.skipDisplay.disabled = !canSkip;
 }
 
-function updateDisplayProgress(stepIndex, totalSteps) {
-  if (totalSteps <= 1) {
+function updateDisplayProgress(stepIndex, totalSteps, label = "Line", options = {}) {
+  const hideWhenSingle = options.hideWhenSingle ?? false;
+
+  if (totalSteps <= 0 || (hideWhenSingle && totalSteps <= 1)) {
     hideDisplayProgress();
     return;
   }
 
-  const progress = ((stepIndex + 1) / totalSteps) * 100;
+  const currentStep = Math.min(Math.max(stepIndex + 1, 1), totalSteps);
+  const progress = (currentStep / totalSteps) * 100;
   elements.displayFooter.hidden = false;
   elements.displayProgressFill.style.width = `${progress}%`;
-  elements.displayProgressLabel.textContent = `Line ${stepIndex + 1} of ${totalSteps}.`;
+  elements.displayProgressLabel.textContent = `${label} ${currentStep} of ${totalSteps}.`;
 }
 
 function renderLongSequenceStep(item) {
@@ -796,14 +802,24 @@ function renderLongSequenceStep(item) {
   const line = sequence.steps[sequence.index] || "";
   elements.displayText.textContent = line;
   elements.displayAnnouncer.textContent = `Line ${sequence.index + 1} of ${sequence.steps.length}. ${line}`;
-  updateDisplayProgress(sequence.index, sequence.steps.length);
+  updateDisplayProgress(sequence.index, sequence.steps.length, "Line", { hideWhenSingle: true });
   syncDisplayControls();
   scheduleDisplayFit();
+}
+
+function renderRegularDisplayProgress() {
+  if (state.displayIndex < 0 || !state.displayQueue.length) {
+    hideDisplayProgress();
+    return;
+  }
+
+  updateDisplayProgress(state.displayIndex, state.displayQueue.length, "Affirmation");
 }
 
 function renderDisplayItem(item) {
   if (!item) {
     state.displaySequence = null;
+    state.currentDisplayId = null;
     elements.displayText.textContent = "No affirmations in this theme yet.";
     elements.displayAnnouncer.textContent = "No affirmations available.";
     hideDisplayProgress();
@@ -826,27 +842,54 @@ function renderDisplayItem(item) {
 
   state.displaySequence = null;
   elements.displayText.textContent = item.body;
-  elements.displayAnnouncer.textContent = item.body;
-  hideDisplayProgress();
+  elements.displayAnnouncer.textContent = `Affirmation ${state.displayIndex + 1} of ${state.displayQueue.length}. ${item.body}`;
+  renderRegularDisplayProgress();
   syncDisplayControls();
   scheduleDisplayFit();
 }
 
-function buildDisplayQueue() {
-  const rows = getDisplayAffirmations().filter((item) => item.id !== state.currentDisplayId);
+function buildDisplayQueue(startItem = null) {
+  const rows = startItem
+    ? getDisplayAffirmations(startItem.theme)
+    : getDisplayAffirmations();
+
+  if (!rows.length) {
+    state.displayQueue = [];
+    state.displayIndex = -1;
+    return;
+  }
+
+  if (startItem) {
+    state.displayQueue = [startItem, ...shuffle(rows.filter((item) => item.id !== startItem.id))];
+    state.displayIndex = 0;
+    return;
+  }
+
   state.displayQueue = shuffle(rows);
+  state.displayIndex = 0;
+}
+
+function getCurrentDisplayAffirmation() {
+  if (state.displayIndex < 0 || state.displayIndex >= state.displayQueue.length) {
+    return null;
+  }
+
+  return state.displayQueue[state.displayIndex] || null;
 }
 
 function getNextAffirmation() {
   if (!state.displayQueue.length) {
     buildDisplayQueue();
+    return getCurrentDisplayAffirmation();
   }
 
-  if (!state.displayQueue.length) {
-    return null;
+  if (state.displayIndex + 1 < state.displayQueue.length) {
+    state.displayIndex += 1;
+    return getCurrentDisplayAffirmation();
   }
 
-  return state.displayQueue.shift();
+  buildDisplayQueue();
+  return getCurrentDisplayAffirmation();
 }
 
 function fitDisplayText() {
@@ -926,15 +969,16 @@ function openDisplayMode(startItem = null) {
   elements.displayMode.hidden = false;
   document.body.style.overflow = "hidden";
   state.displayQueue = [];
+  state.displayIndex = -1;
+  state.currentDisplayId = null;
   state.displaySequence = null;
 
   if (startItem) {
-    state.displayQueue = shuffle(
-      getDisplayAffirmations(startItem.theme).filter((item) => item.id !== startItem.id)
-    );
+    buildDisplayQueue(startItem);
     renderDisplayItem(startItem);
   } else {
-    showNextAffirmation();
+    buildDisplayQueue();
+    renderDisplayItem(getCurrentDisplayAffirmation());
   }
 
   elements.displayBody.focus();
@@ -950,6 +994,9 @@ function openDisplayMode(startItem = null) {
 function closeDisplayMode() {
   elements.displayMode.hidden = true;
   document.body.style.overflow = "";
+  state.displayQueue = [];
+  state.displayIndex = -1;
+  state.currentDisplayId = null;
   state.displaySequence = null;
   hideDisplayProgress();
   syncDisplayControls();
@@ -984,6 +1031,7 @@ async function handleSignOut(successMessage = "Signed out.") {
   state.user = null;
   state.affirmations = [];
   state.displayQueue = [];
+  state.displayIndex = -1;
   state.currentDisplayId = null;
   state.displaySequence = null;
   resetEditor();
