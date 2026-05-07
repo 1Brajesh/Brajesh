@@ -159,31 +159,37 @@
 
     .directory-table {
       width: 100%;
-      border-collapse: collapse;
+      border-collapse: separate;
+      border-spacing: 12px 12px;
       table-layout: fixed;
-      margin-top: 18px;
+      margin: 18px -12px -12px;
     }
 
     .directory-table td {
       width: 25%;
-      border: 1px solid var(--line);
       padding: 0;
       vertical-align: top;
-      background: rgba(11, 10, 10, 0.18);
+      background: transparent;
     }
 
     .directory-link {
       display: block;
-      min-height: 100%;
-      padding: 14px 16px;
-      color: var(--ink);
+      min-height: 56px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(245, 239, 231, 0.04);
+      padding: 14px 18px;
+      color: var(--muted);
       text-decoration: none;
+      transition: border-color 160ms ease, background 160ms ease, color 160ms ease, transform 160ms ease;
     }
 
     .directory-link:hover,
     .directory-link:focus-visible {
+      border-color: rgba(134, 199, 195, 0.42);
       background: rgba(134, 199, 195, 0.08);
-      color: var(--teal);
+      color: var(--ink);
+      transform: translateY(-1px);
       outline: none;
     }
 
@@ -192,8 +198,26 @@
       margin-right: 6px;
     }
 
+    .directory-link.local-link {
+      border-color: rgba(214, 181, 111, 0.55);
+      background: rgba(214, 181, 111, 0.08);
+      color: var(--ink);
+    }
+
+    .directory-link.local-link:hover,
+    .directory-link.local-link:focus-visible {
+      border-color: rgba(214, 181, 111, 0.8);
+      background: rgba(214, 181, 111, 0.13);
+    }
+
     .directory-table td:empty {
-      background: transparent;
+      display: none;
+    }
+
+    .ghost-button.local-link {
+      border-color: rgba(214, 181, 111, 0.55);
+      background: rgba(214, 181, 111, 0.08);
+      color: var(--ink);
     }
 
     .form-grid {
@@ -466,10 +490,7 @@
         <span>Admin</span>
       </a>
       <div class="button-row">
-        <a class="ghost-button" href="/affirmations/">Affirmations</a>
-        <a class="ghost-button" href="/bachata/">Bachata</a>
-        <a class="ghost-button" href="/speeches/">Speeches</a>
-        <a class="ghost-button" href="/">Poems</a>
+        <a class="ghost-button local-link" href="/">Poems</a>
       </div>
     </header>
 
@@ -506,8 +527,8 @@
           <table class="directory-table">
             <tbody>
               <tr>
-                <td><a class="directory-link" href="/affirmations/"><span>1.</span>Affirmations</a></td>
-                <td><a class="directory-link" href="/bachata/"><span>2.</span>Bachata</a></td>
+                <td><a class="directory-link local-link" href="/affirmations/"><span>1.</span>Affirmations</a></td>
+                <td><a class="directory-link local-link" href="/bachata/"><span>2.</span>Bachata</a></td>
                 <td><a class="directory-link" href="https://1brajesh.github.io/Chess/" target="_blank" rel="noreferrer"><span>3.</span>Chess</a></td>
                 <td><a class="directory-link" href="https://cowpea.org" target="_blank" rel="noreferrer"><span>4.</span>Cowpea</a></td>
               </tr>
@@ -519,12 +540,12 @@
               </tr>
               <tr>
                 <td><a class="directory-link" href="https://Drbbsingh.org" target="_blank" rel="noreferrer"><span>9.</span>Papa</a></td>
-                <td><a class="directory-link" href="/speeches/"><span>10.</span>Speeches</a></td>
+                <td><a class="directory-link local-link" href="/speeches/"><span>10.</span>Speeches</a></td>
                 <td><a class="directory-link" href="https://1brajesh.github.io/stockcharts/" target="_blank" rel="noreferrer"><span>11.</span>Stocks</a></td>
                 <td><a class="directory-link" href="https://therais.in" target="_blank" rel="noreferrer"><span>12.</span>TheRaisin Games</a></td>
               </tr>
               <tr>
-                <td><a class="directory-link" href="https://brajesh.com/whoami" target="_blank" rel="noreferrer"><span>13.</span>Who am I</a></td>
+                <td><a class="directory-link local-link" href="https://brajesh.com/whoami" target="_blank" rel="noreferrer"><span>13.</span>Who am I</a></td>
                 <td></td>
                 <td></td>
                 <td></td>
