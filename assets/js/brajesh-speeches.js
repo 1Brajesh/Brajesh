@@ -761,7 +761,7 @@ function renderDetailActions(speech) {
   }
 
   elements.detailActionRow.innerHTML = `
-    <button class="ghost-button" type="button" data-action="edit-speech">Edit Details</button>
+    <button class="ghost-button" type="button" data-action="edit-speech">Edit Meta</button>
     <button class="ghost-button" type="button" data-action="edit-version">Edit Script</button>
     <button class="primary-button" type="button" data-action="new-delivery">Log Run</button>
     <button class="danger-button" type="button" data-action="delete-speech">Delete Speech</button>
@@ -1318,7 +1318,7 @@ function speechEditorConfig(speech) {
 
   return {
     layout: "studio",
-    modeLabel: isEdit ? "Edit Details" : "New Speech",
+    modeLabel: isEdit ? "Edit Meta" : "New Speech",
     title: isEdit ? speech.title : (statusValue === "idea" ? "New Idea" : "New Speech"),
     context: isEdit
       ? `${speech.versions.length} versions · ${speech.deliveries.length} runs`
@@ -1728,7 +1728,7 @@ async function saveSpeech(formData) {
 
     closeEditor();
     await loadSpeeches({ silent: true });
-    setPageStatus(isEdit ? "Speech details saved." : "Speech created.", "ok");
+    setPageStatus(isEdit ? "Speech metadata saved." : "Speech created.", "ok");
   } catch (error) {
     reportEditorError(error.message || "Could not save that speech.");
   }
