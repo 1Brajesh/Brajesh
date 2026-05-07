@@ -772,7 +772,8 @@ function syncHeaderActions() {}
 
 function renderFocusCard(speech, version) {
   const delivery = getSelectedDeliveryForSpeech(speech);
-  const nextStep = delivery?.feedback?.nextActions?.[0] || version?.revisionNote || speech.notes || "-";
+  const revisionNote = version?.revisionNote || "No revision note yet.";
+  const nextMove = speech.notes || delivery?.feedback?.nextActions?.[0] || "No next move yet.";
   const writingLine = speech.status === "idea"
     ? `${version?.rehearsalBullets.length || 0} prompts`
     : `${speechWordCount(speech)} words · ${version?.rehearsalBullets.length || 0} bullets`;
@@ -784,20 +785,25 @@ function renderFocusCard(speech, version) {
     : `${version?.estimatedMinutes || "-"} min target`;
 
   elements.focusCard.innerHTML = `
-    <div>
+    <div class="focus-block" data-size="wide">
       <strong>Active Version</strong>
       <p>${displayText(version?.label)}</p>
       <span class="helper-copy">${displayText(writingLine)}</span>
+      <div class="focus-details">
+        <div class="focus-detail">
+          <span class="focus-label">Revision Note</span>
+          <p>${displayText(revisionNote)}</p>
+        </div>
+        <div class="focus-detail">
+          <span class="focus-label">Next Move</span>
+          <p>${displayText(nextMove)}</p>
+        </div>
+      </div>
     </div>
-    <div>
+    <div class="focus-block">
       <strong>Latest Run</strong>
       <p>${displayText(runLine)}</p>
       <span class="helper-copy">${displayText(runMeta)}</span>
-    </div>
-    <div>
-      <strong>Next Step</strong>
-      <p>${displayText(nextStep)}</p>
-      <span class="helper-copy">${displayText(speech.goal || "No goal yet")}</span>
     </div>
   `;
 }
@@ -901,44 +907,21 @@ function renderOverviewTab(speech) {
   }
 
   return `
-    <div class="two-up">
-      <div class="card">
-        <div class="panel-head">
-          <h4>Speech Body</h4>
-          <div class="button-row">
-            <span class="meta-chip">${version?.label || "No version"}</span>
-            <button class="ghost-button" type="button" data-action="edit-version">Edit Script</button>
-          </div>
-        </div>
-        <div class="metric-row">
-          <span class="metric-chip">${version?.estimatedMinutes || "-"} min target</span>
-          <span class="metric-chip">${speechWordCount(speech)} words</span>
-          <span class="metric-chip">${version?.rehearsalBullets?.length || 0} rehearsal bullets</span>
-        </div>
-        <div class="script-box">
-          <p class="body-copy">${displayText(version?.speechBody, "No speech body yet.")}</p>
+    <div class="card">
+      <div class="panel-head">
+        <h4>Speech Body</h4>
+        <div class="button-row">
+          <span class="meta-chip">${version?.label || "No version"}</span>
+          <button class="ghost-button" type="button" data-action="edit-version">Edit Script</button>
         </div>
       </div>
-
-      <div class="card">
-        <div class="panel-head">
-          <h4>Notes</h4>
-          <span class="meta-chip">${version?.label || "No version"}</span>
-        </div>
-        <div class="info-grid">
-          <div class="info-row">
-            <strong>Goal</strong>
-            <span>${displayText(speech.goal)}</span>
-          </div>
-          <div class="info-row">
-            <strong>Revision Note</strong>
-            <p>${displayText(version?.revisionNote)}</p>
-          </div>
-          <div class="info-row">
-            <strong>Next Move</strong>
-            <p>${displayText(speech.notes)}</p>
-          </div>
-        </div>
+      <div class="metric-row">
+        <span class="metric-chip">${version?.estimatedMinutes || "-"} min target</span>
+        <span class="metric-chip">${speechWordCount(speech)} words</span>
+        <span class="metric-chip">${version?.rehearsalBullets?.length || 0} rehearsal bullets</span>
+      </div>
+      <div class="script-box">
+        <p class="body-copy">${displayText(version?.speechBody, "No speech body yet.")}</p>
       </div>
     </div>
   `;

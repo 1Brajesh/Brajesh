@@ -520,6 +520,41 @@
       line-height: 1.45;
     }
 
+    .focus-block {
+      display: grid;
+      gap: 8px;
+      align-content: start;
+    }
+
+    .focus-block[data-size="wide"] {
+      grid-column: span 2;
+    }
+
+    .focus-details {
+      display: grid;
+      gap: 10px;
+      margin-top: 2px;
+    }
+
+    .focus-detail {
+      display: grid;
+      gap: 4px;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+    }
+
+    .focus-detail:first-child {
+      padding-top: 0;
+      border-top: 0;
+    }
+
+    .focus-label {
+      color: var(--faint);
+      font-size: 0.74rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+
     .detail-layout {
       display: grid;
       gap: 16px;
@@ -1045,6 +1080,14 @@
       .summary-grid,
       .two-up {
         grid-template-columns: 1fr;
+      }
+
+      .focus-card {
+        grid-template-columns: 1fr;
+      }
+
+      .focus-block[data-size="wide"] {
+        grid-column: auto;
       }
 
       .studio-split {
