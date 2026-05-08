@@ -318,7 +318,7 @@ function setScriptTextSize(value) {
   persistScriptTextSizePreference(nextValue);
   applyScriptTextSizePreference();
   syncScriptTextSizeControls();
-  autoSizeRichTextareas(elements.editorShell);
+  scheduleAutoSizeRichTextareas(elements.editorShell);
 }
 
 function isPanelOpen(key) {
@@ -338,6 +338,12 @@ function autoSizeRichTextarea(textarea) {
 function autoSizeRichTextareas(root = document) {
   root.querySelectorAll("textarea[data-rich='true']").forEach((textarea) => {
     autoSizeRichTextarea(textarea);
+  });
+}
+
+function scheduleAutoSizeRichTextareas(root = document) {
+  window.requestAnimationFrame(() => {
+    autoSizeRichTextareas(root);
   });
 }
 
@@ -1799,7 +1805,7 @@ function renderEditor() {
   document.body.classList.add("drawer-open");
   setEditorBusy(false);
   syncScriptTextSizeControls(elements.editorShell);
-  autoSizeRichTextareas(elements.editorShell);
+  scheduleAutoSizeRichTextareas(elements.editorShell);
 
   const showSpeechDelete = state.editor.kind === "speech" && state.editor.intent === "edit" && Boolean(speech);
   elements.deleteEditorButton.hidden = !showSpeechDelete;
