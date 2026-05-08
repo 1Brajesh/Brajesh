@@ -544,11 +544,31 @@
     }
 
     .display-mode {
+      --display-bg-start: #080503;
+      --display-bg-end: #000000;
+      --display-text: #fff5df;
+      --display-accent: #f4cc8a;
+      --display-accent-strong: #fff3d6;
+      --display-surface: rgba(255, 255, 255, 0.06);
+      --display-surface-border: rgba(255, 255, 255, 0.1);
+      --display-surface-text: rgba(255, 255, 255, 0.88);
+      --display-font: var(--serif);
+      --display-font-weight: 600;
+      --display-line-height: 0.95;
+      --display-letter-spacing: -0.02em;
+      --display-text-shadow: 0 10px 32px rgba(0, 0, 0, 0.38);
+      --display-motif: rgba(255, 232, 186, 0.18);
       position: fixed;
       inset: 0;
       z-index: 100;
-      background: #000;
-      color: #fff;
+      isolation: isolate;
+      overflow: hidden;
+      background:
+        radial-gradient(circle at 16% 18%, var(--display-glow-a, rgba(244, 204, 138, 0.2)), transparent 24%),
+        radial-gradient(circle at 84% 14%, var(--display-glow-b, rgba(110, 183, 255, 0.14)), transparent 28%),
+        radial-gradient(circle at 52% 82%, var(--display-glow-c, rgba(255, 255, 255, 0.08)), transparent 32%),
+        linear-gradient(180deg, var(--display-bg-start), var(--display-bg-end));
+      color: var(--display-text);
       display: grid;
       grid-template-rows: auto 1fr auto;
       padding: var(--safe-top) var(--safe-right) var(--safe-bottom) var(--safe-left);
@@ -558,8 +578,21 @@
       display: none;
     }
 
+    .display-mode::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255, 255, 255, 0.02), transparent 18%, transparent 82%, rgba(255, 255, 255, 0.02)),
+        linear-gradient(180deg, rgba(255, 255, 255, 0.03), transparent 16%, transparent 84%, rgba(0, 0, 0, 0.28));
+      z-index: 0;
+    }
+
     .display-bar,
     .display-footer {
+      position: relative;
+      z-index: 2;
       display: flex;
       flex-wrap: wrap;
       align-items: center;
@@ -579,23 +612,30 @@
 
     .display-mode .ghost-button,
     .display-mode .theme-pill {
-      background: rgba(255, 255, 255, 0.06);
-      border-color: rgba(255, 255, 255, 0.1);
-      color: rgba(255, 255, 255, 0.88);
+      background: var(--display-surface);
+      border-color: var(--display-surface-border);
+      color: var(--display-surface-text);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.02);
     }
 
     .display-mode .theme-pill:hover,
     .display-mode .theme-pill:focus-visible,
     .display-mode .theme-pill[aria-pressed="true"] {
-      border-color: rgba(244, 204, 138, 0.76);
-      background: rgba(244, 204, 138, 0.18);
-      color: #fff3d6;
-      box-shadow: 0 0 0 1px rgba(244, 204, 138, 0.16), 0 0 24px rgba(244, 204, 138, 0.18);
+      border-color: var(--display-accent);
+      background: var(--display-surface);
+      border-color: color-mix(in srgb, var(--display-accent) 72%, white);
+      background: color-mix(in srgb, var(--display-accent) 18%, transparent);
+      color: var(--display-accent-strong);
+      box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.06), 0 0 24px rgba(255, 255, 255, 0.08);
+      box-shadow:
+        0 0 0 1px color-mix(in srgb, var(--display-accent) 16%, transparent),
+        0 0 24px color-mix(in srgb, var(--display-accent) 18%, transparent);
       transform: translateY(-1px);
     }
 
     .display-mode .theme-pill.is-random[aria-pressed="true"] {
-      background: linear-gradient(180deg, rgba(244, 204, 138, 0.34), rgba(255, 255, 255, 0.06));
+      background: linear-gradient(180deg, rgba(255, 255, 255, 0.12), var(--display-surface));
+      background: linear-gradient(180deg, color-mix(in srgb, var(--display-accent) 32%, transparent), var(--display-surface));
     }
 
     .skip-display-button {
@@ -625,10 +665,12 @@
 
     .display-body {
       position: relative;
+      z-index: 1;
       min-height: 0;
       display: grid;
       place-items: center;
       overflow: hidden;
+      isolation: isolate;
       padding:
         max(8px, calc(var(--safe-top) * 0.2))
         calc(var(--safe-right) + 8px)
@@ -636,11 +678,50 @@
         calc(var(--safe-left) + 8px);
     }
 
+    .display-motif-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      overflow: hidden;
+      z-index: 0;
+    }
+
+    .display-motif {
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      width: var(--size, 120px);
+      height: var(--size, 120px);
+      color: var(--display-motif);
+      opacity: var(--opacity, 0.16);
+      transform: translate(-50%, -50%) rotate(var(--rotation, 0deg));
+      filter: drop-shadow(0 14px 28px rgba(0, 0, 0, 0.18));
+      animation: displayMotifDrift var(--duration, 28s) ease-in-out infinite alternate;
+    }
+
+    .display-motif svg {
+      display: block;
+      width: 100%;
+      height: 100%;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+
+    .display-motif.is-filled svg .fill {
+      fill: currentColor;
+      stroke: none;
+    }
+
     .display-stage {
       width: 100%;
       height: 100%;
       display: grid;
       place-items: center;
+      position: relative;
+      z-index: 1;
     }
 
     .display-frame {
@@ -656,14 +737,15 @@
       margin: 0;
       width: 100%;
       max-width: 100%;
-      font-family: var(--serif);
-      font-weight: 600;
-      line-height: 0.95;
-      letter-spacing: -0.02em;
+      font-family: var(--display-font);
+      font-weight: var(--display-font-weight);
+      line-height: var(--display-line-height);
+      letter-spacing: var(--display-letter-spacing);
       text-align: center;
       overflow-wrap: break-word;
       word-break: normal;
       hyphens: none;
+      text-shadow: var(--display-text-shadow);
       user-select: none;
       white-space: pre-line;
     }
@@ -681,6 +763,8 @@
       overflow: hidden;
       background: rgba(255, 255, 255, 0.12);
       box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.08);
+      background: color-mix(in srgb, var(--display-accent) 12%, rgba(255, 255, 255, 0.06));
+      box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--display-accent) 12%, rgba(255, 255, 255, 0.06));
     }
 
     .display-progress-fill {
@@ -688,8 +772,18 @@
       width: 0;
       height: 100%;
       border-radius: inherit;
-      background: linear-gradient(90deg, rgba(244, 204, 138, 0.9), rgba(255, 243, 214, 1));
+      background: linear-gradient(90deg, var(--display-accent), var(--display-accent-strong));
       transition: width 180ms ease;
+    }
+
+    @keyframes displayMotifDrift {
+      from {
+        transform: translate(-50%, -50%) rotate(var(--rotation, 0deg));
+      }
+
+      to {
+        transform: translate(calc(-50% + var(--drift-x, 14px)), calc(-50% + var(--drift-y, 18px))) rotate(calc(var(--rotation, 0deg) + var(--drift-rotate, 8deg)));
+      }
     }
 
     .empty {
@@ -773,6 +867,12 @@
 
       .display-progress {
         width: 100%;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .display-motif {
+        animation: none;
       }
     }
   </style>
@@ -932,7 +1032,8 @@
       </div>
     </div>
 
-    <div class="display-body" id="displayBody" tabindex="0" aria-label="Affirmation display area">
+    <div class="display-body" id="displayBody" tabindex="0" aria-label="Affirmation display area. Tap or click left for previous and right for next.">
+      <div class="display-motif-layer" id="displayMotifLayer" aria-hidden="true"></div>
       <div class="display-stage" id="displayStage">
         <div class="display-frame" id="displayFrame">
           <p class="display-text" id="displayText">I trust my own timing and move through life with calm conviction.</p>
@@ -950,6 +1051,6 @@
   </section>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script type="module" src="../assets/js/brajesh-affirmations.js"></script>
+  <script type="module" src="../assets/js/brajesh-affirmations.js?v=20260508c"></script>
 </body>
 </html>

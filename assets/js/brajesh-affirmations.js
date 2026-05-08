@@ -7,6 +7,142 @@ import {
 
 const db = createBrajeshClient();
 const BUILTIN_THEMES = ["long"];
+const DISPLAY_SKINS = [
+  {
+    id: "sunlit",
+    fontFamily: '"Cormorant Garamond", Garamond, Georgia, serif',
+    fontWeight: "600",
+    lineHeight: "0.95",
+    letterSpacing: "-0.02em",
+    textColor: "#fff3db",
+    accentColor: "#f4cc8a",
+    accentStrong: "#fff7e8",
+    surface: "rgba(255, 247, 230, 0.08)",
+    surfaceBorder: "rgba(244, 204, 138, 0.2)",
+    surfaceText: "rgba(255, 248, 235, 0.92)",
+    textShadow: "0 12px 34px rgba(0, 0, 0, 0.42)",
+    bgStart: "#120904",
+    bgEnd: "#010101",
+    glowA: "rgba(244, 204, 138, 0.24)",
+    glowB: "rgba(255, 173, 93, 0.14)",
+    glowC: "rgba(255, 246, 220, 0.08)",
+    motifColor: "rgba(255, 229, 171, 0.24)",
+    motifs: ["sun", "flower", "ribbon"],
+  },
+  {
+    id: "meadow",
+    fontFamily: '"Palatino Linotype", "Book Antiqua", Palatino, serif',
+    fontWeight: "600",
+    lineHeight: "0.97",
+    letterSpacing: "-0.01em",
+    textColor: "#effceb",
+    accentColor: "#9fd7b0",
+    accentStrong: "#f6fff3",
+    surface: "rgba(235, 255, 241, 0.08)",
+    surfaceBorder: "rgba(159, 215, 176, 0.18)",
+    surfaceText: "rgba(240, 255, 245, 0.92)",
+    textShadow: "0 12px 34px rgba(0, 0, 0, 0.4)",
+    bgStart: "#061108",
+    bgEnd: "#010202",
+    glowA: "rgba(113, 184, 139, 0.18)",
+    glowB: "rgba(204, 255, 218, 0.08)",
+    glowC: "rgba(144, 214, 177, 0.1)",
+    motifColor: "rgba(191, 236, 203, 0.2)",
+    motifs: ["leaf", "flower", "wave"],
+  },
+  {
+    id: "dawn",
+    fontFamily: '"Baskerville", "Times New Roman", serif',
+    fontWeight: "600",
+    lineHeight: "0.94",
+    letterSpacing: "-0.025em",
+    textColor: "#ffe7ef",
+    accentColor: "#ffb8ca",
+    accentStrong: "#fff4f7",
+    surface: "rgba(255, 239, 245, 0.08)",
+    surfaceBorder: "rgba(255, 184, 202, 0.18)",
+    surfaceText: "rgba(255, 241, 246, 0.92)",
+    textShadow: "0 14px 36px rgba(0, 0, 0, 0.42)",
+    bgStart: "#13050c",
+    bgEnd: "#010101",
+    glowA: "rgba(255, 157, 183, 0.18)",
+    glowB: "rgba(255, 213, 159, 0.12)",
+    glowC: "rgba(255, 232, 239, 0.08)",
+    motifColor: "rgba(255, 207, 222, 0.22)",
+    motifs: ["flower", "star", "ribbon"],
+  },
+  {
+    id: "tide",
+    fontFamily: '"Iowan Old Style", "Palatino Linotype", Palatino, serif',
+    fontWeight: "600",
+    lineHeight: "0.96",
+    letterSpacing: "-0.015em",
+    textColor: "#eaf8ff",
+    accentColor: "#8bc8ff",
+    accentStrong: "#f4fbff",
+    surface: "rgba(235, 247, 255, 0.08)",
+    surfaceBorder: "rgba(139, 200, 255, 0.18)",
+    surfaceText: "rgba(236, 249, 255, 0.92)",
+    textShadow: "0 12px 34px rgba(0, 0, 0, 0.42)",
+    bgStart: "#041019",
+    bgEnd: "#010203",
+    glowA: "rgba(139, 200, 255, 0.18)",
+    glowB: "rgba(173, 236, 255, 0.12)",
+    glowC: "rgba(233, 249, 255, 0.08)",
+    motifColor: "rgba(173, 229, 255, 0.22)",
+    motifs: ["wave", "sun", "star"],
+  },
+];
+const DISPLAY_MOTIFS = {
+  sun: `
+    <svg viewBox="0 0 72 72" aria-hidden="true" focusable="false">
+      <circle cx="36" cy="36" r="11"></circle>
+      <path d="M36 8v11M36 53v11M8 36h11M53 36h11M16 16l8 8M48 48l8 8M16 56l8-8M48 24l8-8"></path>
+    </svg>
+  `,
+  flower: `
+    <svg viewBox="0 0 72 72" aria-hidden="true" focusable="false">
+      <circle cx="36" cy="18" r="10"></circle>
+      <circle cx="52" cy="28" r="10"></circle>
+      <circle cx="46" cy="48" r="10"></circle>
+      <circle cx="26" cy="48" r="10"></circle>
+      <circle cx="20" cy="28" r="10"></circle>
+      <circle class="fill" cx="36" cy="36" r="5"></circle>
+    </svg>
+  `,
+  leaf: `
+    <svg viewBox="0 0 72 72" aria-hidden="true" focusable="false">
+      <path d="M56 12c-20 3-34 17-38 38 21-3 35-17 38-38Z"></path>
+      <path d="M22 50c7-8 16-17 27-28"></path>
+    </svg>
+  `,
+  wave: `
+    <svg viewBox="0 0 72 72" aria-hidden="true" focusable="false">
+      <path d="M10 40c7-8 13-8 20 0s13 8 20 0 13-8 20 0"></path>
+      <path d="M10 28c7-8 13-8 20 0s13 8 20 0 13-8 20 0"></path>
+    </svg>
+  `,
+  star: `
+    <svg viewBox="0 0 72 72" aria-hidden="true" focusable="false">
+      <path d="M36 12l6.5 14.1L58 28l-11 10.7L49.8 54 36 46.1 22.2 54 25 38.7 14 28l15.5-1.9L36 12Z"></path>
+    </svg>
+  `,
+  ribbon: `
+    <svg viewBox="0 0 72 72" aria-hidden="true" focusable="false">
+      <path d="M13 47c9-17 16-28 24-28 7 0 9 17 17 17 5 0 8-5 11-12"></path>
+      <path d="M11 31c6-4 10-4 13-1 3 3 4 8 8 11 4 3 9 2 18-3"></path>
+    </svg>
+  `,
+};
+const DISPLAY_MOTIF_LAYOUTS = [
+  { left: "14%", top: "18%", size: 114, opacity: "0.16", rotation: -8, driftX: 14, driftY: 18, driftRotate: 10, duration: 24 },
+  { left: "86%", top: "16%", size: 104, opacity: "0.14", rotation: 10, driftX: -12, driftY: 16, driftRotate: -8, duration: 29 },
+  { left: "16%", top: "78%", size: 124, opacity: "0.13", rotation: -14, driftX: 18, driftY: -16, driftRotate: 12, duration: 31 },
+  { left: "84%", top: "76%", size: 118, opacity: "0.15", rotation: 12, driftX: -16, driftY: -18, driftRotate: -11, duration: 27 },
+  { left: "50%", top: "14%", size: 92, opacity: "0.1", rotation: 0, driftX: 0, driftY: 14, driftRotate: 6, duration: 33 },
+  { left: "50%", top: "82%", size: 102, opacity: "0.1", rotation: 0, driftX: 0, driftY: -14, driftRotate: -6, duration: 35 },
+];
+const FILLED_DISPLAY_MOTIFS = new Set(["flower"]);
 
 const state = {
   user: null,
@@ -17,6 +153,8 @@ const state = {
   displayIndex: -1,
   currentDisplayId: null,
   displaySequence: null,
+  displaySkinId: null,
+  lastDisplaySkinId: null,
 };
 let pageLoadPromise = null;
 let pageReloadQueued = false;
@@ -52,6 +190,7 @@ const elements = {
   previewQuote: document.querySelector("#previewQuote"),
   displayMode: document.querySelector("#displayMode"),
   displayBody: document.querySelector("#displayBody"),
+  displayMotifLayer: document.querySelector("#displayMotifLayer"),
   displayStage: document.querySelector("#displayStage"),
   displayFrame: document.querySelector("#displayFrame"),
   displayText: document.querySelector("#displayText"),
@@ -277,6 +416,80 @@ function shuffle(list) {
   return rows;
 }
 
+function pickRandom(list) {
+  if (!list.length) {
+    return null;
+  }
+
+  return list[Math.floor(Math.random() * list.length)] || null;
+}
+
+function chooseDisplaySkin() {
+  const pool = DISPLAY_SKINS.length > 1 && state.lastDisplaySkinId
+    ? DISPLAY_SKINS.filter((skin) => skin.id !== state.lastDisplaySkinId)
+    : DISPLAY_SKINS;
+
+  return pickRandom(pool) || DISPLAY_SKINS[0] || null;
+}
+
+function renderDisplayMotifs(skin) {
+  if (!elements.displayMotifLayer) {
+    return;
+  }
+
+  const availableIcons = shuffle((skin?.motifs || []).filter((name) => DISPLAY_MOTIFS[name]));
+  const availableLayouts = shuffle(DISPLAY_MOTIF_LAYOUTS);
+  const motifCount = Math.min(availableLayouts.length, availableIcons.length, 3);
+
+  if (!motifCount) {
+    elements.displayMotifLayer.innerHTML = "";
+    return;
+  }
+
+  elements.displayMotifLayer.innerHTML = availableIcons.slice(0, motifCount).map((name, index) => {
+    const layout = availableLayouts[index];
+    const filledClass = FILLED_DISPLAY_MOTIFS.has(name) ? " is-filled" : "";
+    return `
+      <span
+        class="display-motif${filledClass}"
+        style="left:${layout.left};top:${layout.top};--size:${layout.size}px;--opacity:${layout.opacity};--rotation:${layout.rotation}deg;--drift-x:${layout.driftX}px;--drift-y:${layout.driftY}px;--drift-rotate:${layout.driftRotate}deg;--duration:${layout.duration}s;"
+      >${DISPLAY_MOTIFS[name]}</span>
+    `;
+  }).join("");
+}
+
+function applyDisplaySkin() {
+  const skin = chooseDisplaySkin();
+  if (!skin) {
+    return;
+  }
+
+  state.displaySkinId = skin.id;
+  state.lastDisplaySkinId = skin.id;
+  elements.displayMode.dataset.skin = skin.id;
+
+  const style = elements.displayMode.style;
+  style.setProperty("--display-bg-start", skin.bgStart);
+  style.setProperty("--display-bg-end", skin.bgEnd);
+  style.setProperty("--display-text", skin.textColor);
+  style.setProperty("--display-accent", skin.accentColor);
+  style.setProperty("--display-accent-strong", skin.accentStrong);
+  style.setProperty("--display-surface", skin.surface);
+  style.setProperty("--display-surface-border", skin.surfaceBorder);
+  style.setProperty("--display-surface-text", skin.surfaceText);
+  style.setProperty("--display-font", skin.fontFamily);
+  style.setProperty("--display-font-weight", skin.fontWeight);
+  style.setProperty("--display-line-height", skin.lineHeight);
+  style.setProperty("--display-letter-spacing", skin.letterSpacing);
+  style.setProperty("--display-text-shadow", skin.textShadow);
+  style.setProperty("--display-glow-a", skin.glowA);
+  style.setProperty("--display-glow-b", skin.glowB);
+  style.setProperty("--display-glow-c", skin.glowC);
+  style.setProperty("--display-motif", skin.motifColor);
+
+  renderDisplayMotifs(skin);
+}
+
 function isLongAffirmation(item) {
   return item?.theme === "long";
 }
@@ -292,6 +505,15 @@ function getLongAffirmationSteps(body) {
 
 function hasSkippableLongSequence() {
   return Boolean(state.displaySequence && state.displaySequence.steps.length > 1);
+}
+
+function getWrappedDisplayIndex(index) {
+  const total = state.displayQueue.length;
+  if (!total) {
+    return -1;
+  }
+
+  return ((index % total) + total) % total;
 }
 
 function renderThemeOptions() {
@@ -489,13 +711,12 @@ function renderControls() {
 
   renderThemePills(elements.displayThemeBar, state.selectedTheme, (theme) => {
     state.selectedTheme = theme;
-    state.displayQueue = [];
-    state.displayIndex = -1;
     state.currentDisplayId = null;
     state.displaySequence = null;
+    buildDisplayQueue();
     renderControls();
     renderLibrary();
-    showNextAffirmation();
+    renderDisplayItem(getCurrentDisplayAffirmation());
   });
 }
 
@@ -816,7 +1037,9 @@ function renderRegularDisplayProgress() {
   updateDisplayProgress(state.displayIndex, state.displayQueue.length, "Affirmation");
 }
 
-function renderDisplayItem(item) {
+function renderDisplayItem(item, options = {}) {
+  const startAtEnd = options.startAtEnd ?? false;
+
   if (!item) {
     state.displaySequence = null;
     state.currentDisplayId = null;
@@ -831,10 +1054,11 @@ function renderDisplayItem(item) {
   state.currentDisplayId = item.id;
 
   if (isLongAffirmation(item)) {
+    const steps = getLongAffirmationSteps(item.body);
     state.displaySequence = {
       itemId: item.id,
-      steps: getLongAffirmationSteps(item.body),
-      index: 0,
+      steps,
+      index: startAtEnd ? steps.length - 1 : 0,
     };
     renderLongSequenceStep(item);
     return;
@@ -879,16 +1103,29 @@ function getCurrentDisplayAffirmation() {
 
 function getNextAffirmation() {
   if (!state.displayQueue.length) {
-    buildDisplayQueue();
+    return null;
+  }
+
+  if (state.displayIndex < 0) {
+    state.displayIndex = 0;
     return getCurrentDisplayAffirmation();
   }
 
-  if (state.displayIndex + 1 < state.displayQueue.length) {
-    state.displayIndex += 1;
+  state.displayIndex = getWrappedDisplayIndex(state.displayIndex + 1);
+  return getCurrentDisplayAffirmation();
+}
+
+function getPreviousAffirmation() {
+  if (!state.displayQueue.length) {
+    return null;
+  }
+
+  if (state.displayIndex < 0) {
+    state.displayIndex = state.displayQueue.length - 1;
     return getCurrentDisplayAffirmation();
   }
 
-  buildDisplayQueue();
+  state.displayIndex = getWrappedDisplayIndex(state.displayIndex - 1);
   return getCurrentDisplayAffirmation();
 }
 
@@ -956,6 +1193,17 @@ function showNextAffirmation() {
   renderDisplayItem(getNextAffirmation());
 }
 
+function showPreviousAffirmation() {
+  if (state.displaySequence && state.displaySequence.index > 0) {
+    state.displaySequence.index -= 1;
+    renderLongSequenceStep(getAffirmationById(state.displaySequence.itemId));
+    return;
+  }
+
+  state.displaySequence = null;
+  renderDisplayItem(getPreviousAffirmation(), { startAtEnd: true });
+}
+
 function skipCurrentAffirmation() {
   if (!hasSkippableLongSequence()) {
     return;
@@ -972,10 +1220,11 @@ function openDisplayMode(startItem = null) {
   state.displayIndex = -1;
   state.currentDisplayId = null;
   state.displaySequence = null;
+  applyDisplaySkin();
 
   if (startItem) {
     buildDisplayQueue(startItem);
-    renderDisplayItem(startItem);
+    renderDisplayItem(getCurrentDisplayAffirmation());
   } else {
     buildDisplayQueue();
     renderDisplayItem(getCurrentDisplayAffirmation());
@@ -998,9 +1247,13 @@ function closeDisplayMode() {
   state.displayIndex = -1;
   state.currentDisplayId = null;
   state.displaySequence = null;
+  state.displaySkinId = null;
   hideDisplayProgress();
   syncDisplayControls();
   displayTouchStart = null;
+  if (elements.displayMotifLayer) {
+    elements.displayMotifLayer.innerHTML = "";
+  }
 }
 
 function clearAuthHash() {
@@ -1190,6 +1443,15 @@ function startDisplayFromCurrentTheme() {
   openDisplayMode();
 }
 
+function getDisplayDirectionForPoint(clientX) {
+  const bounds = elements.displayBody.getBoundingClientRect();
+  if (!bounds.width) {
+    return 1;
+  }
+
+  return clientX < bounds.left + (bounds.width / 2) ? -1 : 1;
+}
+
 elements.startDisplay.addEventListener("click", startDisplayFromCurrentTheme);
 if (elements.startDisplayTop) {
   elements.startDisplayTop.addEventListener("click", startDisplayFromCurrentTheme);
@@ -1200,6 +1462,12 @@ elements.exitDisplay.addEventListener("click", closeDisplayMode);
 elements.displayBody.addEventListener("click", (event) => {
   if (event.target.closest("button")) return;
   if (Date.now() < suppressDisplayClickUntil) return;
+  const direction = getDisplayDirectionForPoint(event.clientX);
+  if (direction < 0) {
+    showPreviousAffirmation();
+    return;
+  }
+
   showNextAffirmation();
 });
 
@@ -1247,9 +1515,16 @@ document.addEventListener("keydown", (event) => {
     return;
   }
 
+  if (event.key === "ArrowLeft" || event.key === "ArrowUp") {
+    event.preventDefault();
+    showPreviousAffirmation();
+    return;
+  }
+
   if (event.key === " " || event.key === "ArrowRight" || event.key === "ArrowDown") {
     event.preventDefault();
     showNextAffirmation();
+    return;
   }
 
   if ((event.key === "n" || event.key === "N") && hasSkippableLongSequence()) {
