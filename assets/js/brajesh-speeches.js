@@ -6,6 +6,10 @@ import {
 } from "./brajesh-auth.js";
 
 const db = createBrajeshClient();
+const SCRIPT_TEXT_SIZE_STORAGE_KEY = "brajesh_speeches_script_text_size";
+const SCRIPT_TEXT_SIZE_MIN = 16;
+const SCRIPT_TEXT_SIZE_MAX = 28;
+const SCRIPT_TEXT_SIZE_DEFAULT = 20;
 
 const state = {
   user: null,
@@ -20,6 +24,13 @@ const state = {
     speechId: null,
     versionId: null,
     index: 0,
+  },
+  preferences: {
+    scriptTextSize: loadScriptTextSizePreference(),
+  },
+  panels: {
+    "version-history": false,
+    "rehearsal-bullets": false,
   },
   editor: {
     open: false,
@@ -256,6 +267,61 @@ function slugify(value) {
 
 function todayIso() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function clampScriptTextSize(value) {
+  const parsed = Number.parseInt(String(value || ""), 10);
+
+  if (Number.isNaN(parsed)) {
+    return SCRIPT_TEXT_SIZE_DEFAULT;
+  }
+
+  return Math.min(SCRIPT_TEXT_SIZE_MAX, Math.max(SCRIPT_TEXT_SIZE_MIN, parsed));
+}
+
+function loadScriptTextSizePreference() {
+  try {
+    return clampScriptTextSize(window.localStorage?.getItem(SCRIPT_TEXT_SIZE_STORAGE_KEY));
+  } catch {
+    return SCRIPT_TEXT_SIZE_DEFAULT;
+  }
+}
+
+function persistScriptTextSizePreference(value) {
+  try {
+    window.localStorage?.setItem(SCRIPT_TEXT_SIZE_STORAGE_KEY, String(value));
+  } catch {}
+}
+
+function applyScriptTextSizePreference() {
+  document.documentElement.style.setProperty("--script-text-size", `${state.preferences.scriptTextSize}px`);
+}
+
+function syncScriptTextSizeControls(root = document) {
+  const value = String(state.preferences.scriptTextSize);
+  const displayValue = `${value}px`;
+
+  root.querySelectorAll("[data-script-text-size-input]").forEach((input) => {
+    if (input.value !== value) {
+      input.value = value;
+    }
+  });
+
+  root.querySelectorAll("[data-script-text-size-value]").forEach((element) => {
+    element.textContent = displayValue;
+  });
+}
+
+function setScriptTextSize(value) {
+  const nextValue = clampScriptTextSize(value);
+  state.preferences.scriptTextSize = nextValue;
+  persistScriptTextSizePreference(nextValue);
+  applyScriptTextSizePreference();
+  syncScriptTextSizeControls();
+}
+
+function isPanelOpen(key) {
+  return Boolean(state.panels[key]);
 }
 
 function parseMinutes(value) {
@@ -920,6 +986,9 @@ function renderOverviewTab(speech) {
         <span class="metric-chip">${speechWordCount(speech)} words</span>
         <span class="metric-chip">${version?.rehearsalBullets?.length || 0} rehearsal bullets</span>
       </div>
+      <div class="panel-tools">
+        ${renderScriptTextSizeControl()}
+      </div>
       <div class="script-box">
         <p class="body-copy">${displayText(version?.speechBody, "No speech body yet.")}</p>
       </div>
@@ -930,41 +999,51 @@ function renderOverviewTab(speech) {
 function renderVersionsTab(speech) {
   const selectedVersion = getSelectedVersionForSpeech(speech);
   const basedOnVersion = selectedVersion?.basedOn ? getVersionById(speech, selectedVersion.basedOn) : null;
+  const versionHistoryOpen = isPanelOpen("version-history");
 
   return `
-    <div class="two-up">
-      <div class="card">
-        <div class="panel-head">
-          <h4>Version History</h4>
-          <div class="button-row">
+    <div class="reader-stack">
+      <details class="collapse-card" data-collapse-key="version-history" ${versionHistoryOpen ? "open" : ""}>
+        <summary class="collapse-summary">
+          <div>
+            <h4>Version History</h4>
+            <p class="collapse-summary-copy">Selected draft: ${displayText(selectedVersion?.label, "No version")}.</p>
+          </div>
+          <div class="collapse-summary-meta">
             <span class="meta-chip">${speech.versions.length} total</span>
-            <button class="ghost-button" type="button" data-action="new-version">New Version</button>
+            <span class="meta-chip">${versionHistoryOpen ? "Collapse" : "Expand"}</span>
+          </div>
+        </summary>
+        <div class="collapse-content">
+          <div class="version-list scroll-area">
+            ${speech.versions.map((version) => `
+              <div class="version-card" data-selected="${String(selectedVersion?.id === version.id)}">
+                <button class="version-button" type="button" data-version-id="${version.id}">
+                  <div class="version-title">${displayText(version.label)}</div>
+                  <div class="timeline-meta">
+                    <span>${formatDate(version.updatedAt)}</span>
+                    <span>${version.estimatedMinutes} min</span>
+                    <span>${version.rehearsalBullets.length} bullets</span>
+                  </div>
+                  <p class="helper-copy">${displayText(version.revisionNote, "No revision note.")}</p>
+                </button>
+              </div>
+            `).join("")}
           </div>
         </div>
-        <div class="version-list">
-          ${speech.versions.map((version) => `
-            <div class="version-card" data-selected="${String(selectedVersion?.id === version.id)}">
-              <button class="version-button" type="button" data-version-id="${version.id}">
-                <div class="version-title">${displayText(version.label)}</div>
-                <div class="timeline-meta">
-                  <span>${formatDate(version.updatedAt)}</span>
-                  <span>${version.estimatedMinutes} min</span>
-                  <span>${version.rehearsalBullets.length} bullets</span>
-                </div>
-                <p class="helper-copy">${displayText(version.revisionNote, "No revision note.")}</p>
-              </button>
-            </div>
-          `).join("")}
-        </div>
-      </div>
+      </details>
 
       <div class="card">
         <div class="panel-head">
           <h4>${displayText(selectedVersion?.label, "Version Detail")}</h4>
           <div class="button-row">
             <span class="meta-chip">${displayText(basedOnVersion ? `Based on ${basedOnVersion.label}` : "Original version")}</span>
+            <button class="ghost-button" type="button" data-action="new-version">New Version</button>
             <button class="ghost-button" type="button" data-action="edit-version">Edit Script</button>
           </div>
+        </div>
+        <div class="panel-tools">
+          ${renderScriptTextSizeControl()}
         </div>
         <div class="script-box" style="margin-bottom: 14px;">
           <p class="body-copy">${displayText(selectedVersion?.speechBody, "No speech body yet.")}</p>
@@ -1286,6 +1365,76 @@ function renderOptions(options, selectedValue) {
   `).join("");
 }
 
+function renderScriptTextSizeControl(label = "Script Text") {
+  return `
+    <label class="text-size-control">
+      <span class="text-size-label">${escapeHtml(label)}</span>
+      <input
+        class="text-size-slider"
+        type="range"
+        min="${SCRIPT_TEXT_SIZE_MIN}"
+        max="${SCRIPT_TEXT_SIZE_MAX}"
+        step="1"
+        value="${state.preferences.scriptTextSize}"
+        data-script-text-size-input
+        aria-label="Script text size"
+      >
+      <span class="meta-chip text-size-value" data-script-text-size-value>${state.preferences.scriptTextSize}px</span>
+    </label>
+  `;
+}
+
+function renderScriptComposer({
+  heading,
+  copy,
+  bodyId,
+  bodyName,
+  bodyValue,
+  bulletsId,
+  bulletsName,
+  bulletValue,
+  collapseKey = "rehearsal-bullets",
+}) {
+  const bulletCount = parseLineList(bulletValue).length;
+  const panelOpen = isPanelOpen(collapseKey);
+
+  return `
+    <div class="editor-card">
+      <div class="editor-card-head">
+        <div>
+          <h3>${escapeHtml(heading)}</h3>
+          <p class="editor-card-copy">${escapeHtml(copy)}</p>
+        </div>
+        ${renderScriptTextSizeControl()}
+      </div>
+      <div class="field">
+        <label for="${escapeHtml(bodyId)}">Speech Body</label>
+        <textarea id="${escapeHtml(bodyId)}" name="${escapeHtml(bodyName)}" data-rich="true">${escapeHtml(bodyValue)}</textarea>
+      </div>
+    </div>
+
+    <details class="collapse-card" data-collapse-key="${escapeHtml(collapseKey)}" ${panelOpen ? "open" : ""}>
+      <summary class="collapse-summary">
+        <div>
+          <h4>Rehearsal Bullets</h4>
+          <p class="collapse-summary-copy">Keep rehearsal prompts nearby without letting them compete with the draft.</p>
+        </div>
+        <div class="collapse-summary-meta">
+          <span class="meta-chip">${bulletCount} ${bulletCount === 1 ? "bullet" : "bullets"}</span>
+          <span class="meta-chip">${panelOpen ? "Collapse" : "Expand"}</span>
+        </div>
+      </summary>
+      <div class="collapse-content">
+        <div class="field">
+          <label for="${escapeHtml(bulletsId)}">Rehearsal Bullets</label>
+          <textarea id="${escapeHtml(bulletsId)}" name="${escapeHtml(bulletsName)}" data-bullets="true">${escapeHtml(bulletValue)}</textarea>
+          <p class="field-hint">One bullet per line. These feed the rehearsal tab and fullscreen cue mode.</p>
+        </div>
+      </div>
+    </details>
+  `;
+}
+
 function statusOptions(selectedValue) {
   return renderOptions([
     { value: "idea", label: "Idea" },
@@ -1391,7 +1540,7 @@ function speechEditorConfig(speech) {
             <div class="editor-card-head">
               <div>
                 <h3>First Version</h3>
-                <p class="editor-card-copy">Start with both the full script and the rehearsal cues in one place.</p>
+                <p class="editor-card-copy">Set the label, timing, and revision note before you move into the script.</p>
               </div>
             </div>
             <div class="editor-grid">
@@ -1408,17 +1557,18 @@ function speechEditorConfig(speech) {
                 <textarea id="revisionNoteInput" name="revisionNote" data-compact="true">${escapeHtml(statusValue === "idea" ? "Capture the exact scene before writing the speech body." : "Build the first full pass, then tighten the opening and ending.")}</textarea>
               </div>
             </div>
-            <div class="studio-split">
-              <div class="field">
-                <label for="speechBodyInput">Speech Body</label>
-                <textarea id="speechBodyInput" name="speechBody" data-rich="true">${escapeHtml("")}</textarea>
-              </div>
-              <div class="field">
-                <label for="rehearsalBulletsInput">Rehearsal Bullets</label>
-                <textarea id="rehearsalBulletsInput" name="rehearsalBullets" data-bullets="true">${escapeHtml(statusValue === "idea" ? "Scene\nLine worth keeping\nWhat the audience should feel" : "")}</textarea>
-              </div>
-            </div>
           </div>
+
+          ${renderScriptComposer({
+            heading: "Speech Body",
+            copy: "Give the draft the full width. Rehearsal bullets stay below in a collapsible panel.",
+            bodyId: "speechBodyInput",
+            bodyName: "speechBody",
+            bodyValue: "",
+            bulletsId: "rehearsalBulletsInput",
+            bulletsName: "rehearsalBullets",
+            bulletValue: statusValue === "idea" ? "Scene\nLine worth keeping\nWhat the audience should feel" : "",
+          })}
         `}
       </div>
     `,
@@ -1487,18 +1637,16 @@ function versionEditorConfig(speech, version) {
           </div>
         </div>
 
-        <div class="editor-card">
-          <div class="studio-split">
-            <div class="field">
-              <label for="versionBodyInput">Speech Body</label>
-              <textarea id="versionBodyInput" name="speechBody" data-rich="true">${escapeHtml(bodyValue)}</textarea>
-            </div>
-            <div class="field">
-              <label for="versionBulletsInput">Rehearsal Bullets</label>
-              <textarea id="versionBulletsInput" name="rehearsalBullets" data-bullets="true">${escapeHtml(bulletValue)}</textarea>
-            </div>
-          </div>
-        </div>
+        ${renderScriptComposer({
+          heading: "Speech Body",
+          copy: "Keep the writing surface full-width. Rehearsal bullets are available below when you need cue edits.",
+          bodyId: "versionBodyInput",
+          bodyName: "speechBody",
+          bodyValue,
+          bulletsId: "versionBulletsInput",
+          bulletsName: "rehearsalBullets",
+          bulletValue,
+        })}
       </div>
     `,
   };
@@ -1633,6 +1781,7 @@ function renderEditor() {
   elements.editorShell.hidden = false;
   document.body.classList.add("drawer-open");
   setEditorBusy(false);
+  syncScriptTextSizeControls(elements.editorShell);
 
   const showSpeechDelete = state.editor.kind === "speech" && state.editor.intent === "edit" && Boolean(speech);
   elements.deleteEditorButton.hidden = !showSpeechDelete;
@@ -2087,6 +2236,7 @@ function renderApp() {
   renderCounts();
   renderFilters();
   renderSpeechList();
+  syncScriptTextSizeControls(elements.tabContent);
 }
 
 elements.loginForm.addEventListener("submit", async (event) => {
@@ -2180,6 +2330,16 @@ elements.tabContent.addEventListener("click", (event) => {
   }
 });
 
+function handleScriptTextSizeInput(event) {
+  const slider = event.target.closest("[data-script-text-size-input]");
+  if (!slider) return;
+
+  setScriptTextSize(slider.value);
+}
+
+elements.tabContent.addEventListener("input", handleScriptTextSizeInput);
+elements.editorShell.addEventListener("input", handleScriptTextSizeInput);
+
 elements.editorBackdrop.addEventListener("click", () => {
   if (editorBusy) return;
   closeEditor();
@@ -2247,6 +2407,21 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
+document.addEventListener("toggle", (event) => {
+  const panel = event.target;
+
+  if (!(panel instanceof HTMLDetailsElement)) {
+    return;
+  }
+
+  const collapseKey = panel.dataset.collapseKey;
+  if (!collapseKey) {
+    return;
+  }
+
+  state.panels[collapseKey] = panel.open;
+}, true);
+
 db.auth.onAuthStateChange((event, session) => {
   if (!["SIGNED_IN", "SIGNED_OUT", "USER_UPDATED"].includes(event)) {
     return;
@@ -2258,6 +2433,7 @@ db.auth.onAuthStateChange((event, session) => {
 });
 
 function init() {
+  applyScriptTextSizePreference();
   updateIdentityUI();
   renderApp();
   requestPageLoad().finally(clearAuthHash);
