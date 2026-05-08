@@ -318,10 +318,27 @@ function setScriptTextSize(value) {
   persistScriptTextSizePreference(nextValue);
   applyScriptTextSizePreference();
   syncScriptTextSizeControls();
+  autoSizeRichTextareas(elements.editorShell);
 }
 
 function isPanelOpen(key) {
   return Boolean(state.panels[key]);
+}
+
+function autoSizeRichTextarea(textarea) {
+  if (!(textarea instanceof HTMLTextAreaElement) || textarea.dataset.rich !== "true") {
+    return;
+  }
+
+  textarea.style.height = "auto";
+  const minHeight = Number.parseFloat(window.getComputedStyle(textarea).minHeight) || 0;
+  textarea.style.height = `${Math.max(minHeight, textarea.scrollHeight)}px`;
+}
+
+function autoSizeRichTextareas(root = document) {
+  root.querySelectorAll("textarea[data-rich='true']").forEach((textarea) => {
+    autoSizeRichTextarea(textarea);
+  });
 }
 
 function parseMinutes(value) {
@@ -1782,6 +1799,7 @@ function renderEditor() {
   document.body.classList.add("drawer-open");
   setEditorBusy(false);
   syncScriptTextSizeControls(elements.editorShell);
+  autoSizeRichTextareas(elements.editorShell);
 
   const showSpeechDelete = state.editor.kind === "speech" && state.editor.intent === "edit" && Boolean(speech);
   elements.deleteEditorButton.hidden = !showSpeechDelete;
@@ -2337,8 +2355,16 @@ function handleScriptTextSizeInput(event) {
   setScriptTextSize(slider.value);
 }
 
+function handleEditorRichTextareaInput(event) {
+  const textarea = event.target.closest("textarea[data-rich='true']");
+  if (!textarea) return;
+
+  autoSizeRichTextarea(textarea);
+}
+
 elements.tabContent.addEventListener("input", handleScriptTextSizeInput);
 elements.editorShell.addEventListener("input", handleScriptTextSizeInput);
+elements.editorShell.addEventListener("input", handleEditorRichTextareaInput);
 
 elements.editorBackdrop.addEventListener("click", () => {
   if (editorBusy) return;
