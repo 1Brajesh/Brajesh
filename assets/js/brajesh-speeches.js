@@ -842,16 +842,16 @@ function renderDetailActions(speech) {
 
   if (speech.status === "idea") {
     elements.detailActionRow.innerHTML = `
-      <button class="ghost-button" type="button" data-action="edit-speech">Edit Idea</button>
-      <button class="ghost-button" type="button" data-action="edit-version">Edit Note</button>
+      <button class="meta-button" type="button" data-action="edit-speech">Edit Idea</button>
+      <button class="script-button" type="button" data-action="edit-version">Edit Note</button>
       <button class="danger-button" type="button" data-action="delete-speech">Delete Idea</button>
     `;
     return;
   }
 
   elements.detailActionRow.innerHTML = `
-    <button class="ghost-button" type="button" data-action="edit-speech">Edit Meta</button>
-    <button class="ghost-button" type="button" data-action="edit-version">Edit Script</button>
+    <button class="meta-button" type="button" data-action="edit-speech">Edit Meta</button>
+    <button class="script-button" type="button" data-action="edit-version">Edit Script</button>
     <button class="primary-button" type="button" data-action="new-delivery">Log Run</button>
     <button class="danger-button" type="button" data-action="delete-speech">Delete Speech</button>
   `;
@@ -1001,7 +1001,7 @@ function renderOverviewTab(speech) {
         <h4>Speech Body</h4>
         <div class="button-row">
           <span class="meta-chip">${version?.label || "No version"}</span>
-          <button class="ghost-button" type="button" data-action="edit-version">Edit Script</button>
+          <button class="script-button" type="button" data-action="edit-version">Edit Script</button>
         </div>
       </div>
       <div class="metric-row">
@@ -1062,13 +1062,13 @@ function renderVersionsTab(speech) {
           <div class="button-row">
             <span class="meta-chip">${displayText(basedOnVersion ? `Based on ${basedOnVersion.label}` : "Original version")}</span>
             <button class="ghost-button" type="button" data-action="new-version">New Version</button>
-            <button class="ghost-button" type="button" data-action="edit-version">Edit Script</button>
+            <button class="script-button" type="button" data-action="edit-version">Edit Script</button>
           </div>
         </div>
         <div class="panel-tools">
           ${renderScriptTextSizeControl()}
         </div>
-        <div class="script-box" style="margin-bottom: 14px;">
+        <div class="script-box script-box-compact scroll-area" style="margin-bottom: 14px;">
           <p class="body-copy">${displayText(selectedVersion?.speechBody, "No speech body yet.")}</p>
         </div>
         <div class="notes-box">
@@ -1232,7 +1232,7 @@ function renderRehearsalTab(speech) {
           <h4>${rightTitle}</h4>
           <div class="button-row">
             <span class="meta-chip">${version?.label || "No version"}</span>
-            <button class="ghost-button" type="button" data-action="edit-version">${speech.status === "idea" ? "Edit Note" : "Edit Bullets"}</button>
+            <button class="script-button" type="button" data-action="edit-version">${speech.status === "idea" ? "Edit Note" : "Edit Bullets"}</button>
           </div>
         </div>
         <div class="info-grid" style="margin-bottom: 16px;">

@@ -18,6 +18,7 @@
       --navy: #7bb7ff;
       --gold: #f2c876;
       --green: #8ad0a6;
+      --rose: #ff9dcc;
       --coral: #ff9d84;
       --violet: #a790ff;
       --shadow: 0 26px 72px rgba(0, 0, 0, 0.32);
@@ -162,6 +163,8 @@
     .filter-pill,
     .tab-pill,
     .ghost-button,
+    .meta-button,
+    .script-button,
     .primary-button,
     .danger-button {
       min-height: 44px;
@@ -173,7 +176,9 @@
     .nav-pill,
     .filter-pill,
     .tab-pill,
-    .ghost-button {
+    .ghost-button,
+    .meta-button,
+    .script-button {
       background: rgba(255, 255, 255, 0.05);
       color: var(--muted);
     }
@@ -182,12 +187,16 @@
     .filter-pill:hover,
     .tab-pill:hover,
     .ghost-button:hover,
+    .meta-button:hover,
+    .script-button:hover,
     .primary-button:hover,
     .danger-button:hover,
     .nav-pill:focus-visible,
     .filter-pill:focus-visible,
     .tab-pill:focus-visible,
     .ghost-button:focus-visible,
+    .meta-button:focus-visible,
+    .script-button:focus-visible,
     .primary-button:focus-visible,
     .danger-button:focus-visible {
       transform: translateY(-1px);
@@ -212,6 +221,18 @@
       color: var(--coral);
       background: rgba(255, 157, 132, 0.08);
       border-color: rgba(255, 157, 132, 0.22);
+    }
+
+    .meta-button {
+      color: var(--rose);
+      background: rgba(255, 157, 204, 0.1);
+      border-color: rgba(255, 157, 204, 0.24);
+    }
+
+    .script-button {
+      color: var(--green);
+      background: rgba(138, 208, 166, 0.1);
+      border-color: rgba(138, 208, 166, 0.24);
     }
 
     .button-content {
@@ -673,6 +694,10 @@
       line-height: 1.76;
       font-family: var(--serif);
       font-size: var(--script-text-size);
+    }
+
+    .script-box-compact {
+      max-height: min(58vh, 420px);
     }
 
     .notes-box .body-copy {
